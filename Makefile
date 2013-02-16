@@ -189,7 +189,7 @@ FIGURES5PS += $(patsubst %.jpg,%.ps,  $(FIGURES5JPG))
 
 fig = figures
 
-figures : extractfigures $(FIGURES4PS) $(FIGURES5PS)
+figures : $(FIGURES4PS) $(FIGURES5PS)
 
 extractfigures:
 	@tar xvf $(fig).tar.gz
