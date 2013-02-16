@@ -1,0 +1,121 @@
+% IEEEtran class scratch pad registers
+% dimen
+\newdimen\trantmpdimenA
+\newdimen\trantmpdimenB
+% count
+\newcount\trantmpcountA
+\newcount\trantmpcountB
+% token list
+\newtoks\trantmptoksA
+
+% \PARstart
+% Definition for the big two line drop cap letter at the beginning of the
+% first paragraph of journal papers. The first argument is the first letter
+% of the first word, the second argument is the remaining letters of the
+% first word which will be rendered in upper case.
+% In V1.6 this has been completely rewritten to:
+% 
+% 1. no longer have problems when the user begins an environment
+%    within the paragraph that uses \PARstart.
+% 2. auto-detect and use the current font family
+% 3. revise handling of the space at the end of the first word so that
+%    interword glue will now work as normal.
+% 4. produce correctly aligned edges for the (two) indented lines.
+% 
+% We generalize things via control macros - playing with these is fun too.
+% 
+% the number of lines that are indented to clear it
+\def\PARstartDROPLINES{2}
+% minimum number of lines left on a page to allow a \@PARstart
+% Does not take into consideration rubber shrink, so it tends to
+% be overly cautious
+\def\PARstartMINPAGELINES{2}
+% the depth the letter is lowered below the baseline
+% the height (and size) of the letter is determined by the sum
+% of this value and the height of a capital "T" in the current
+% font. It is a good idea to set this value in terms of the baselineskip
+% so that it can respond to changes therein.
+\def\PARstartDROPDEPTH{1.1\baselineskip}
+% This is the separation distance from the drop letter to the main text.
+% Lengths that depend on the font (i.e., ex, em, etc.) will be referenced
+% to the font that is active when PARstart is called. 
+\def\PARstartSEP{0.15em}
+
+
+% definition of \PARstart
+% THIS IS A CONTROLLED SPACING AREA, DO NOT ALLOW SPACES WITHIN THESE LINES
+% 
+% The token \PARstartfont will be globally defined after the first use
+% of \PARstart and will be a font command which creates the big letter
+% The first argument is the first letter of the first word and the second
+% argument is the rest of the first word(s).
+\def\PARstart#1#2{\par{%
+% if this page does not have enough space, break it and lets start
+% on a new one
+%\tranneedspace{\PARstartMINPAGELINES\baselineskip}{\relax}%
+% calculate the desired height of the big letter
+% it extends from the top of a capital "T" in the current font
+% down to \PARstartDROPDEPTH below the current baseline
+\settoheight{\trantmpdimenA}{T}%
+\addtolength{\trantmpdimenA}{\PARstartDROPDEPTH}%
+% extract the name of the current font in bold
+% and place it in \PARstartFONTNAME
+\def\PARstartGETFIRSTWORD##1 ##2\relax{##1}%
+{\bfseries%
+\edef\PARstartFONTNAMESPACE{\fontname\font\space}%
+\xdef\PARstartFONTNAME{\expandafter\PARstartGETFIRSTWORD\PARstartFONTNAMESPACE\relax}}%
+% define a font based on this name with a point size equal to the desired
+% height of the drop letter
+\font\PARstartsubfont\PARstartFONTNAME\space at \trantmpdimenA\relax%
+% save this value as a counter (integer) value (sp points)
+\trantmpcountA=\trantmpdimenA%
+% now get the height of the actual letter produced by this font size
+\settoheight{\trantmpdimenB}{\PARstartsubfont\MakeUppercase{#1}}%
+% If something bogus happens like the first argument is empty or the
+% current font is strange, do not allow a zero height.
+\ifdim\trantmpdimenB=0pt\relax%
+\typeout{** WARNING: PARstart drop letter has zero height! (line \the\inputlineno)}%
+\typeout{ Forcing the drop letter font size to 10pt.}%
+\trantmpdimenB=10pt%
+\fi%
+% and store it as a counter
+\trantmpcountB=\trantmpdimenB%
+% Since a font size doesn't exactly correspond to the height of the capital
+% letters in that font, the actual height of the letter, \trantmpcountB,
+% will be less than that desired, \trantmpcountA
+% we need to raise the font size, \trantmpdimenA 
+% by \trantmpcountA / \trantmpcountB
+% But, TeX doesn't have floating point division, so we have to use integer
+% division. Hence the use of the counters.
+% We need to reduce the denominator so that the loss of the remainder will
+% have minimal affect on the accuracy of the result
+\divide\trantmpcountB by 200%
+\divide\trantmpcountA by \trantmpcountB%
+% Then reequalize things when we use TeX's ability to multiply by
+% floating point values
+\trantmpdimenB=0.005\trantmpdimenA%
+\multiply\trantmpdimenB by \trantmpcountA%
+% \PARstartfont is globaly set to the calculated font of the big letter
+% We need to carry this out of the local calculation area to to create the
+% big letter.
+\global\font\PARstartfont\PARstartFONTNAME\space at \trantmpdimenB%
+% Now set \trantmpdimenA to the width of the big letter
+% We need to carry this out of the local calculation area to set the
+% hanging indent
+\settowidth{\global\trantmpdimenA}{\PARstartfont\MakeUppercase{#1}}}%
+% end of the isolated calculation environment
+% add in the extra clearance we want
+\advance\trantmpdimenA by \PARstartSEP%
+% \trantmpdimenA has the width of the big letter plus the
+% separation space and \PARstartfont is the font we need to use
+% Now, we make the letter and issue the hanging indent command
+% The letter is placed in a box of zero width and height so that other
+% text won't be displaced by it.
+\noindent\hangindent\trantmpdimenA\hangafter=-\PARstartDROPLINES%
+\makebox[0pt][l]{\hspace{-\trantmpdimenA}\raisebox{-\PARstartDROPDEPTH}[0pt][0pt]{\PARstartfont\MakeUppercase{#1}}}\MakeUppercase{#2}}
+
+
+% V1.6 \CMPARstart is no longer needed as \PARstart now uses whatever
+% the current font family is.
+% \CMPARstart is provided here for backward compatability.
+\let\CMPARstart=\PARstart

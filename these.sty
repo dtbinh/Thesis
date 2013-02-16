@@ -1,0 +1,496 @@
+% Package pour ecrire des theses francaises (c) Eddy Fromentin 1996
+% légèrement trafiqué par Florent de Dinechin 1997
+% légèrement trafiqué en octobre 97 pour repondre a la scol
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\typeout{}
+\typeout{(Jingle jingle) Style these.sty fourni par l'ADOC (jingle jingle)}
+\typeout{}
+%
+% Packages Nécéssaires
+%
+\RequirePackage{latexsym} % anciens symboles latex
+\RequirePackage{makeidx}
+\RequirePackage{calc}
+\RequirePackage{ifthen}
+\RequirePackage{float}
+\RequirePackage[frenchb]{babel}
+
+%
+% Définition des commandes utiles
+%
+% page de titre
+\newcommand{\NOORDRE}{000}
+\newcommand{\PRESENTATION}{présentée}
+\newcommand{\SOUTENUE}{À soutenir}
+
+\newcommand{\AUTp}{Jean}
+\newcommand{\AUTn}{\textsc{Dupont}}
+\newcommand{\EQP}{HAPPY}
+\newcommand{\COMPU}{IRISA}
+\newcommand{\PRESp}{P.}
+\newcommand{\PRESn}{\textsc{Dugland}}
+\newcommand{\PRESq}{gargamel}
+\newcommand{\ADVp}{S.}
+\newcommand{\ADVn}{\textsc{Dublair}}
+\newcommand{\ADVq}{grand schtroumpf}
+\newcommand{\RAPpi}{X.}
+\newcommand{\RAPni}{\textsc{Dupont}}
+\newcommand{\RAPqi}{schtroumpf farceur}
+\newcommand{\EXApi}{X.}
+\newcommand{\EXAni}{\textsc{Durant}}
+\newcommand{\EXAqi}{schtroumpf faineant}
+\newcommand{\Mpres}{M}
+\newcommand{\TPres}{Président}
+\newcommand{\Mrap}{M}
+\newcommand{\TRap}{Rapporteur}
+\newcommand{\Mexa}{MM}
+\newcommand{\TExa}{Examinateurs}
+
+\newcommand{\TITRE}{{\Large\textsl{La vie prodigieuse des Escargots}}}
+\newcommand{\DATE}{1\ier{} Janvier 0000}
+
+\newcommand{\pnqRAP}[1]{%
+\csname RAPp#1\endcsname\ \csname RAPn#1\endcsname, \csname RAPq#1\endcsname}
+\newcommand{\pnqEXA}[1]{%
+\csname EXAp#1\endcsname\ \csname EXAn#1\endcsname, \csname EXAq#1\endcsname}
+
+
+\newcommand{\Lrap}[1]{%
+& {\csname RAPp#1\endcsname} & {\csname RAPn#1\endcsname}%
+}
+\newcommand{\Lexa}[1]{%
+& {\csname EXAp#1\endcsname} & {\csname EXAn#1\endcsname}%
+}
+
+\newcommand{\newExam}[4]{%
+\expandafter\def\csname EXAp#1\endcsname{#2}%
+\expandafter\def\csname EXAn#1\endcsname{\textsc{#3}}%
+\expandafter\def\csname EXAq#1\endcsname{#4}%
+}
+
+\newcommand{\newRap}[4]{%
+\expandafter\def\csname RAPp#1\endcsname{#2}%
+\expandafter\def\csname RAPn#1\endcsname{\textsc{#3}}%
+\expandafter\def\csname RAPq#1\endcsname{#4}%
+}
+
+\newcommand{\JURY}{
+\begin{center}
+\begin{tabular}{r@{\protect\hspace{0.5cm}}ll@{\protect\hspace{1.0cm}}l}
+\Mpres.~:&\PRESp &\PRESn &\TPres\\
+\Mrap.~:\Lrap{i}&\TRap\\
+\setcounter{III}{1}%
+\whiledo{{\value{III}<\value{nrap}}}{\stepcounter{III}\Lrap{\roman{III}}\\}%
+\Mexa.~:\Lexa{i}&\TExa\\
+\setcounter{III}{1}%
+\whiledo{{\value{III}<\value{nexa}}}{\stepcounter{III}\Lexa{\roman{III}}\\}%
+& \ADVp  & \ADVn\\
+\end{tabular}
+\end{center}
+}
+
+\newcommand{\makethese}{%
+    \thispagestyle{empty}
+    \begin{flushleft}
+      $\mbox{N}^{{}_o}$ d'ordre: \NOORDRE\\[\baselineskip]
+    \end{flushleft}
+    \begin{center}
+      {\LARGE 
+        \textbf{THÈSE}\\[\baselineskip]
+      }
+      \PRESENTATION\\[\baselineskip]
+      {\Large
+        \textbf{devant l'Université de Rennes 1}\\[\baselineskip]
+      }
+      pour obtenir\\[\baselineskip]
+      {\large 
+        le grade de~: \emph{\textsc{Docteur de l'Université de Rennes 1}}\\
+        Mention \textsc{Informatique}\\[\baselineskip]
+      }
+      par\\[\baselineskip]
+      {\large 
+        \AUTp\ \AUTn\\[\baselineskip]
+      }
+Équipe d'accueil~: \EQP\\
+École Doctorale~: Matisse\\
+Composante universitaire~: \COMPU\\[\baselineskip]~\\[\baselineskip]
+      Titre de la thèse~:\\
+      \TITRE\\
+      \vfill
+      \SOUTENUE\ le \DATE\ devant la commission d'examen\\[\baselineskip]
+    \end{center}
+    \JURY
+%  \whitepage
+}
+
+\newcommand{\remerciements}[1]{%
+\thispagestyle{empty}
+\section*{Remerciements}
+Je remercie \PRESp\ \PRESn, \PRESq, qui me fait l'honneur 
+de présider ce jury.\\[\baselineskip]
+
+Je remercie %
+\setcounter{III}{1}%
+\whiledo{\value{III}<\value{nrap}}{%
+\pnqRAP{\roman{III}}%
+\stepcounter{III}%
+\ifthenelse{\value{III}=\value{nrap}}{, et }{, }%
+}\pnqRAP{\roman{nrap}}, d'avoir bien voulu accepter la charge 
+de rapporteur.\\[\baselineskip]
+
+Je remercie %
+\setcounter{III}{1}%
+\whiledo{\value{III}<\value{nexa}}{%
+\pnqEXA{\roman{III}}%
+\stepcounter{III}%
+\ifthenelse{\value{III}=\value{nexa}}{, et }{, }%
+}\pnqEXA{\roman{nexa}}, d'avoir bien voulu juger ce travail.\\[\baselineskip]
+
+Je remercie enfin \ADVp\ \ADVn, \ADVq, 
+qui  a dirigé ma thèse.\\[\baselineskip]
+
+#1 
+\vfill
+}
+
+
+%\setlength{\hoffset}{0mm}
+%\setlength{\voffset}{0mm}
+%\setlength{\paperheight}{297mm}
+%\setlength{\paperwidth}{210mm}
+%\setlength{\textwidth}{145mm}
+%\setlength{\marginparwidth}{-10mm}
+%\setlength{\headheight}{2\baselineskip}
+%\setlength{\textheight}{210mm}
+%\setlength{\evensidemargin}{0mm}%
+%\setlength{\oddsidemargin}{15mm}%
+
+
+
+
+
+
+\setlength{\paperheight}{297mm}
+\setlength{\paperwidth}{210mm}
+
+\setlength{\hoffset}{0mm}
+\setlength{\voffset}{0mm}
+
+\setlength{\evensidemargin}{0mm}%
+\setlength{\oddsidemargin}{0mm}%
+\setlength{\topmargin}{1pt}%18
+
+\setlength{\headheight}{15pt}
+\setlength{\headsep}{15pt}
+
+\setlength{\textwidth}{155mm}
+\setlength{\textheight}{625pt} %615
+
+\setlength{\marginparsep}{0mm}
+\setlength{\marginparwidth}{0mm}
+
+\setlength{\footskip}{27pt}
+
+
+%\setlength{\parskip}{1mm}% extra espace entre paragraphes
+
+%% A4= 21: odd: 2.54+14.5+4.46       even:2.54+1.92+14.5+2.54
+
+% ------------------------------------------------------------------------------
+% --- HEADERS ------------------------------------------------------------------
+% ------------------------------------------------------------------------------
+
+\renewcommand{\ps@plain}{%
+\renewcommand{\@oddhead}{}%
+\renewcommand{\@evenhead}{}%
+\renewcommand{\@evenfoot}{\hfil\textrm{\thepage}\hfil}%
+\renewcommand{\@oddfoot}{\@evenfoot}%
+}
+
+% --- ORIG ---
+%\renewcommand{\ps@headings}{%
+%\renewcommand{\@oddhead}{\parbox{210mm}{\leftmark\hfil\thepage}}%
+%\renewcommand{\@evenhead}{\parbox{210mm}{\thepage\hfil\rightmark}}%
+%\renewcommand{\@evenfoot}{}%
+%\renewcommand{\@oddfoot}{\@evenfoot}%
+%}
+
+\renewcommand{\ps@headings}{%
+\renewcommand{\@oddhead}{\parbox{210mm}{\leftmark\hfil-\thepage-}}%
+\renewcommand{\@evenhead}{\parbox{210mm}{\thepage\hfil\rightmark}}%
+\renewcommand{\@evenfoot}{}%
+\renewcommand{\@oddfoot}{\@evenfoot}%
+}
+
+
+
+
+%\renewcommand\@chapapp{CHAPITRE}
+%\renewcommand\@makechapterhead[1]{%
+%   \vspace*{40\p@} %
+%  {\parindent \z@ \raggedright \normalfont
+%       \begin{tabular}{p{150mm}}
+%      \ifnum \c@secnumdepth >\m@ne
+%      \if@mainmatter
+%      \hfill\bfseries\Large \@chapapp\space  \Huge\thechapter \\
+%      \rule{0pt}{30\p@} \\
+%      \fi
+%      \fi
+%	   \hline %\rule{0pt}{5pt} \\
+%	   \Huge \bfseries \begin{center} #1 \end{center}  \\
+%	   %\rule{0pt}{5pt} \\
+%	   \hline
+%	\end{tabular}
+%      \vskip 40\p@
+%}
+%}
+
+
+
+\usepackage{titlesec}
+
+\titleformat{\chapter}[display]{\normalfont\bfseries\Huge}{\filleft{\Large\MakeUppercase{\chaptertitlename}} \thechapter\vspace{30pt}}{0pt}{\titlerule\vspace{20pt}\filcenter\Huge}[\thispagestyle{empty}\vspace{20pt}\titlerule]
+
+
+
+
+\renewcommand{\chaptermark}[1]{\markleft{#1}{}} % remember chapter title
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+% Ceci permet d'avoir les noms de chapitre et de section
+% en minuscules
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad#1}}
+\fancyhf{}         % supprime les en-têtes et pieds prédéfinis
+\fancyhead[LE,RO]{\thepage}% Left Even, Right Odd
+\fancyhead[LO]{\rightmark} % Left Odd
+\fancyhead[RE]{\leftmark} % Right Even
+\renewcommand{\headrulewidth}{.5pt}% filet en haut de page
+\addtolength{\headheight}{0.5pt}              % espace pour le filet
+\renewcommand{\footrulewidth}{0pt} % pas de filet en bas
+\fancypagestyle{plain}{ % pages de tetes de chapitre
+    \fancyhead{}              % supprime l'entete
+    \renewcommand{\headrulewidth}{0pt} % et le filet
+\fancyfoot[C]{\thepage}% Left Even, Right Odd
+}
+
+%-----------------------------------------------------
+% Gestion des caption
+\usepackage[footnotesize,sf]{caption2}
+\renewcommand{\captionfont}{\footnotesize\sffamily\em}
+%\renewcommand{\captionlabelfont}{\footnotesize}
+\renewcommand{\captionlabeldelim}{ -- }
+
+%\lhead[\fancyplain{}{\bfseries\thepage}]{\fancyplain{}{\bfseries\leftmark}}
+%\rhead[\fancyplain{}{\bfseries\rightmark}]{\fancyplain{}{\bfseries\thepage}}
+%\cfoot{}
+
+\addtocounter{secnumdepth}{1}
+\AtBeginDocument{%
+% definition d'algorithmes
+% commente 04.06.02 par D.Fredouille la fripouille
+%\floatstyle{plain}
+%\newfloat{algorithm}{t}{algs}[chapter]
+%\floatname{algorithm}{\textsc{Alg}}
+%\floatplacement{algorithm}{tbp}
+\makeindex
+\def\uppercase{}
+\newcounter{nrap}
+\setcounter{nrap}{0}
+\newcounter{nexa}
+\setcounter{nexa}{0}
+\newcounter{III}
+}
+
+\AtEndDocument{%
+}
+
+%====================< Commandes Utilisateur >========================
+
+% ignore le texte en parametre
+\newcommand{\ignore}[1]{} 
+% remarque, lors de l'ecriture de la these
+\newcommand{\rmq}[1]{{\noindent\texttt{\textbf{Remarque:}#1}}}
+% interdit les cesures
+\newcommand{\nohyphens}{\hyphenpenalty=10000\exhyphenpenalty=10000\relax}
+% insere une page blanche
+\newcommand{\whitepage}{\newpage\thispagestyle{empty}\addtocounter{page}{-1}~\vspace*{3cm}~\vfill~\newpage}
+
+% Insere un mot dans le texte en l'ajoutant dans la table des index
+%\newcommand{\idx}[2][*]{%
+%#2%
+%\ifthenelse{\equal{#1}{*}}{%
+%\index{#2}%
+%}{%
+%\index{#1!#2}%
+%}%
+%}
+
+%
+% Theoremes , etc
+%
+
+\newtheorem{definition}{Définition}[chapter]
+%\@addtoreset{Definition}{}
+\newtheorem{propriete}{Propriété}[chapter]
+%\@addtoreset{Propriete}{}
+\newtheorem{theoreme}{Théorème}[chapter]
+%\@addtoreset{Theoreme}{}
+\newtheorem{corollaire}{Corollaire}[chapter]
+%\@addtoreset{Corollaire}{}
+\newtheorem{remarque}{Remarque}[chapter]
+%\@addtoreset{Remarque}{}
+\newtheorem{lemme}{Lemme}[chapter]
+%\@addtoreset{Lemme}{}
+%\@addtoreset{figure}{}
+
+\newtheorem{proposition}{Proposition}[chapter]
+\newtheorem{hyp}{Hypoth\`ese}    
+
+%\newenvironment{definition}{%
+%\begin{Definition}%
+%}{%
+%\hfill$\Box$\\%
+%\end{Definition}%
+%}
+
+%\newenvironment{propriete}{%
+%\begin{Propriete}%
+%}{%    
+%\hfill$\Box$\\%
+%\end{Propriete}%
+%}
+
+%\newenvironment{theoreme}{%
+%\begin{Theoreme}%
+%}{%
+%\hfill$\Box$\\%
+%\end{Theoreme}%
+%}
+
+%\newenvironment{corollaire}{%
+%\begin{Corollaire}%
+%}{%
+%\hfill$\Box$\\%
+%\end{Corollaire}%
+%}
+
+%\newenvironment{remarque}{%
+%\begin{Remarque}%
+%}{%  
+%\hfill$\Box$\\%
+%\end{Remarque}%
+%}
+
+%\newenvironment{preuve}{%
+%\paragraph{Preuve}%
+%}{%
+%\hfill$\Box$\\%
+%}
+
+% --- ENVIRONMENTS ----------------------------------------------------------- %
+% "box" symbols at end of proofs
+\def\QEDclosed{\mbox{\rule[0pt]{1.3ex}{1.3ex}}} % for a filled box
+% V1.6 some journals use an open box instead that will just fit around a closed one
+\def\QEDopen{{\setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.2pt}\fbox{\rule[0pt]{0pt}{1.3ex}\rule[0pt]{1.3ex}{0pt}}}}
+\def\QED{\QEDopen} % default to closed
+
+\def\proof{\noindent\hspace{2em}{\textbf{\itshape Preuve:} }}
+%\def\endproof{\hspace*{\fill}~\QED\par\endtrivlist\unskip\newline}
+\def\endproof{\hspace*{\fill}~\QED\newline}
+
+\newcounter{remark}[section] \setcounter{remark}{1}
+\def\remark{
+  \addtocounter{remark}{1} 
+  \noindent{\textbf{Remarque \arabic{section}.\arabic{remark}:} }}
+\def\endremark{\hspace*{\fill}\newline} 
+
+%\newtheorem{definition}{Définition}[section]
+%\newtheorem{remark}{Remark}[section]
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{corollary}{Corrolaire}[section]
+
+%
+% Divers utilitaires pratiques
+%
+% sauve et restore le numero d'une footnote
+\newcommand{\footlab}[1]{\label{foot:#1}}
+\newcommand{\footref}[1]{\raisebox{1ex}{\footnotesize\protect\ref{foot:#1}}}
+
+% Commandes pour la première page uniquement
+% Cette commande doit etre presente si la these est soutenue
+\newcommand{\soutenue}{% 
+\renewcommand{\PRESENTATION}{Présentée devant}%
+\renewcommand{\SOUTENUE}{soutenue}%
+}
+
+% titre de la these
+\newcommand{\titre}[1]{%
+\renewcommand{\TITRE}{{\Large\textsl{#1}}}%
+}
+
+% Date de soutenance
+\newcommand{\datesout}[1]{%
+\renewcommand{\DATE}{#1}%
+}
+
+% Prenom Nom de l'auteur
+\newcommand{\Auteur}[2]{%
+\renewcommand{\AUTp}{#1}%
+\renewcommand{\AUTn}{\textsc{#2}}%
+}
+
+% Equipe et composante universitaire
+\newcommand{\Equipe}[2]{%
+\renewcommand{\EQP}{#1}%
+\renewcommand{\COMPU}{\textsc{#2}}%
+}
+
+% Prenom Nom Qualite du president du jury
+\newcommand{\President}[4][M]{%
+\renewcommand{\Mpres}{#1}%
+\ifthenelse{\equal{#1}{Me}}{\renewcommand{\TPres}{Présidente}}{}%
+\renewcommand{\PRESp}{#2}%
+\renewcommand{\PRESn}{\textsc{#3}}%
+\renewcommand{\PRESq}{#4}%
+}
+
+% Prenom Nom Qualite du directeur de these
+\newcommand{\Advisor}[3]{%
+\renewcommand{\ADVp}{#1}%
+\renewcommand{\ADVn}{\textsc{#2}}%
+\renewcommand{\ADVq}{#3}%
+}
+
+% Prenom Nom Qualite d'un rapporteur
+\newcommand{\Rapporteur}[3]{%
+\stepcounter{nrap}%
+\newRap{\roman{nrap}}{#1}{#2}{#3}%
+\ifthenelse{\value{nrap}>1}{%
+\renewcommand{\Mrap}{MM}%
+\renewcommand{\TRap}{Rapporteurs}%
+}{}%
+}
+
+%Prenom Nom Qualite d'un examinateur
+\newcommand{\Examinateur}[3]{%
+\stepcounter{nexa}%
+\newExam{\roman{nexa}}{#1}{#2}{#3}%
+}
+
+% Numero Ordre
+\newcommand{\ordre}[1]{%
+\renewcommand{\NOORDRE}{#1}%
+}
+
+
+\newcommand{\alignquatriemedecouv}{
+\newpage\thispagestyle{empty}~
+\ifodd\value{page}
+\newpage\thispagestyle{empty}
+\else
+\newpage\thispagestyle{empty}~\newpage\thispagestyle{empty}
+\fi
+}

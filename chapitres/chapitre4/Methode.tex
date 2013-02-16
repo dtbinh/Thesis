@@ -1,0 +1,807 @@
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\section{Capture de mouvements}
+\label{chap:mocap}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+La capture de mouvements consiste à enregistrer un mouvement indépendamment 
+de l'aspect visuel, afin de l'encoder dans un format adapté aux besoins.
+Par exemple le format pourra faciliter une analyse ou une édition de mouvements.
+Le mouvement enregistré peut être issu de n'importe quel objet ou individu réel.
+Ainsi, les données acquises peuvent avoir des applications très variées.
+Les paragraphes suivants présentent quelques exemples d'applications de la capture de mouvements,
+puis les difficultés générales rencontrées. 
+Ensuite nous présentons les différentes technologies 
+développées pour effectuer de la capture de mouvement et détaillons le 
+processus de capture pour le système disponible dans ces travaux.
+
+\subsection{Applications}
+La capture de mouvements est tout d'abord utilisée pour analyser 
+des mouvements. Dans le domaine biomédical pour l'analyse de mouvements de marche par exemple ou
+pour l'analyse de performances sportives. La visualisation 3D
+de la performance de l'athlète lui permet de déceler les points perfectibles de
+sa technique plus facilement qu'avec une simple vidéo gr\^ace à la possibilité 
+de changement d'angle de vue. La capture de mouvements peut aussi
+servir de mécanisme d'entrée pour l'interaction homme-machine.
+Un système de capture de mouvements peut aussi être utilisé comme un outil
+de localisation rapide et précise d'objets ou d'obstacles dans l'environnement dans le
+cadre d'une planification ou d'une replanification~\cite{baudouin11, stilman05}. 
+
+Mais l'application la plus populaire des techniques de capture de mouvement
+est l'animation graphique dans le cinéma ou les jeux vidéo afin de doter
+des personnages virtuels de mouvements visuellement réalistes. En effet,
+il est très difficile de créer des mouvements réalistes et précis
+capable de traduire des caractéristiques subtiles qu'une personne produit.
+La technique d'animation manuelle (sans capture) la plus directe consiste à définir les
+positions et configurations d'objets à chaque instant de temps.
+Il est possible de réduire la quantité de travail de cette technique gr\^ace à 
+des outils informatique. Des configurations clefs sont définies, puis
+le mouvement entre deux configurations successives est calculé par interpolation~\cite{burtnyk76, kovar03}.
+Cependant, ces techniques nécessitent
+un animateur doté d'une grande expérience pour identifier et reproduire
+de façon convaincante les propriétés des mouvements.
+L'importance de l'expérience dans le domaine de l'animation
+est soulignée dans~\cite{lasseter87} où une analogie entre les principes d'animation 
+traditionnelle dessinée à la main et l'animation 3D assistée par ordinateur est présentée.
+Le travail d'animation reste dans tous les cas considérable.
+C'est pour cette raison qu'il peut être intéressant de
+transférer des mouvements réels vers l'objet ou le personnage à animer
+en utilisant de la capture de mouvements. L'avantage direct est de pouvoir
+être capable de reproduire beaucoup de mouvements sans chercher à 
+trouver un modèle mathématique permettant de générer un mouvement particulier
+et obtenir ainsi une grande expressivité théorique de mouvements.
+
+\subsection{Difficultés générales de la technique}
+Le transfert de mouvements n'est pas direct à cause, entres autres, des imperfections
+des systèmes de capture de mouvements. Les sessions 
+de capture de mouvements complexes sont souvent suivies d'étapes de 
+post-traitements. Les données collectées peuvent
+être bruitées de manière sensible ou présenter des discontinuités en
+fonction des technologies utilisées. Par conséquent, ces données 
+doivent être nettoyées si nécessaire. Ensuite, ces mouvements peuvent être
+édités en considérant que le mouvement
+est un signal~\cite{bruderlin95}. L'édition de mouvement peut être motivée par plusieurs raisons~\cite{gleicher00}.
+Si on veut réutiliser un mouvement déjà enregistré
+en y apportant des petits changements comme adapter le mouvement
+à un personnage possédant des caractéristiques physiques différentes. Il s'agit du problème 
+connu sous le nom de \emph{motion retargeting}~\cite{gleicher98}. 
+Un des problèmes récurrent du \emph{motion retargeting} est que le mouvement
+recallé perd certaines propriétés. Notamment, lors des mouvements de marceh, les pieds du personnage
+perdent le contact avec le sol, ou glissent sur celui-ci. Une autre étape 
+d'édition est donc nécessaire pour obtenir un mouvement cohérent.
+D'autres changements peuvent être apportés pour varier 
+des mouvements dupliqués pour animer une foule par exemple. 
+L'édition peut aussi être motivée par la volonté 
+de créer des mouvements physiquement impossible ou corriger des imperfections
+issues de la prestation de l'acteur. Une autre étape délicate est l'association
+des données éditées aux éléments virtuels à animer. Cette dernière étape
+peut être très complexe. 
+Par exemple l'animation de visage est considéré comme un problème à part entière et des
+techniques de réductions de dimensions sont même utilisées~\cite{deng06}.
+
+Malheureusement, dans la plupart des cas, l'édition est
+un processus lourd de par la nature de la capture de mouvements.
+Les données correspondent aux configurations (ou postures) des éléments
+enregistrés, par conséquent, l'édition portera sur un important volume de données.
+Le volume de données cache souvent les problèmes liés à des erreurs de capteurs.
+Par exemple des erreurs de suivi ou des discontinuités trop importantes.
+Ainsi, la correction des erreurs nécessite un temps non négligeable de 
+post-traitements.
+De plus ces données ne comportent aucune sémantique. Il s'agit de données
+bas niveau, et donc il n'y a pas directement d'informations sur les propriétés importantes
+du mouvement ni sur les motivations du mouvement. Il faut donc beaucoup de données
+pour avoir une grande couverture de type de mouvements (mouvement exécuté par un personnage avec
+un certain degré de fatigue, de blessures, de joie, à différentes vitesses\ldots), 
+et un problème d'explosion combinatoire
+peut ainsi apparaître~\cite{gleicher08}.
+
+\subsection{Systèmes optiques avec marqueurs}
+Plusieurs caméras sont utilisées simultanément pour acquérir la
+position 3D de marqueurs spécifiques en émettant des rayons infrarouge se réfléchissant
+sur les marqueurs. Les marqueurs se présentent
+sous la forme de petites billes réfléchissantes légères, ainsi l'acteur n'est pas beaucoup gêné
+par le port de marqueurs.
+Le nombre de caméras nécessaire dépend du volume de capture souhaité et
+de la puissance de calcul disponible pour traiter les données des caméras.
+%La figure~\ref{fig:cortex} montre le logiciel Cortex de Motion Analysis dédié à ce types de système
+%de capture de mouvements.
+%\begin{figure}[t]
+%  \begin{center}
+%    \includegraphics[width=0.5\linewidth]{figures/chapitre4/cortexwalk.ps}
+%  \end{center}
+%  \caption{Logiciel Cortex est dédié à la capture de mouvement en utilisant un sytème optique à plusieurs
+%  caméra infrarouges pour localiser des marqueurs réfléchissant.}
+%  \label{fig:cortex}
+%\end{figure}
+Les systèmes optiques nécessitent une calibration: les caméras suivent
+des objets de dimensions connues que le logiciel maître reconnait.
+Puis en combinant les informations des caméras, la position des caméras dans l'espace 
+est calculée. 
+Pour estimer la position des marqueurs dans l'espace, 
+les images provenant des caméras sont filtrées afin d'en extraire
+les positions dans l'image de la caméra des marqueurs visibles.
+Ces images filtrées sont utilisées pour effectuer une correspondance spatiale des marqueurs
+(voir la figure~\ref{fig:triang}).
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.5\textwidth}{!}{
+    \input{figures/chapitre4/epip.tex}
+    }
+  \end{center}
+  \caption{Le point $\mbf{x}$ se projète dans le plan image des caméras $C$ et $C'$ respectivement en
+  $\boldsymbol{\mu}$ et $\boldsymbol{\mu}'$.}
+  \label{fig:triang}
+\end{figure}
+Un point dans l'espace 3D se projette en un point
+dans le plan image 2D d'une caméra $C$ selon l'équation:
+\begin{equation}
+  \boldsymbol{\mu} = \mbf{P} \mbf{x}
+  \label{eq:projCamera}
+\end{equation}
+\noindent où $\boldsymbol{\mu}$ est le vecteur de dimension $3$ des coordonnées homogènes
+du point dans l'image de la caméra, $\mbf{P}$ est la matrice de projection de dimension $3\times4$
+de la caméra et $\mbf{x}$ le vecteur de dimension $4$ des coordonnées homogènes du point dans l'espace
+cartésien. La matrice $\mbf{P}$ est calculée lors de la phase de calibration de la caméra
+et traduit la projection, la mise à l'échelle de l'image, la translation à l'origine (dans le plan image)
+et la position et orientation de la caméra dans le repère du monde.
+
+Cette équation de projection peut s'écrire à l'aide d'un produit vectoriel:
+\begin{equation}
+  \boldsymbol{\mu} \times \mbf{P} \mbf{x} = 
+                        \left( 
+			\begin{array}{c} 
+			  \mu_1 \\
+			  \mu_2 \\
+			  1
+			\end{array}
+			\right) 
+			\times 
+			\left( 
+			\begin{array}{c} 
+			  \mbf{P}_1^T \\
+			  \mbf{P}_2^T \\
+			  \mbf{P}_3^T 
+			\end{array} 
+			\right)  \mbf{x} = \mbf{0}  
+  \label{eq:prodVecProjCam}
+\end{equation}
+
+Le développement conduit à deux équations linéairement indépendantes:
+\begin{align}
+  (\mu_1 \mbf{P}_3^T - \mbf{P}_1^T) \mbf{x} & = 0\\
+  (\mu_2 \mbf{P}_3^T - \mbf{P}_2^T) \mbf{x} & = 0\\
+  \label{eq:syscam}
+\end{align}
+Les équations associées à chacune des caméras sont regroupées pour former un système
+$\mbf{A}\mbf{x} = \mbf{0}$ dont la résolution sur $\mbf{x}$ par les moindres carrés (à cause du bruit)
+fournit la position 3D du point observé.
+
+Les données produites par la capture contiennent les positions 3D dans l'espace Cartésien
+de chacun des marqueurs utilisés. Cependant, bien que la position
+des marqueurs soit connue, le système n'a aucun autre indice que
+la continuité des positions pour les identifier, contrairement aux systèmes 
+électromagnétiques par exemple dans lesquels chaque émetteur possède sa propre signature.
+Ceci peut poser problème en cas d'occlusion d'un marqueur qui pourrait être perdu dans la suite
+du mouvement. Des solutions matérielles peuvent être utilisées pour 
+surmonter ce problème, comme l'utilisation de marqueurs actifs (avec des diodes électroluminescentes par exemple)
+pour distinguer les marqueurs. Cependant ces marqueurs sont plus encombrant,
+souvent c\^ablés et nécessite des dispositifs d'alimentations embarqués.
+
+Les données obtenues sont précises, il est relativement aisé de changer la configuration des marqueurs
+en cas de besoin (occlusions, changement d'acteur ayant une taille différente).
+La liberté des mouvements est importante par l'absence de c\^ables. 
+L'espace de capture peut être grand (en fonction du nombre de caméra).
+Il est également possible de construire un squelette virtuel calculé à partir des points 3D 
+correspondant aux marqueurs~\cite{silaghi98}. Les données issues des
+transformations géométriques des os du squelette peuvent ensuite être exportées vers des 
+logiciels d'animation graphique.
+
+En revanche, l'environnement dans lequel
+se déroule la capture doit être contr\^olé: la lumière du soleil, les objets réfléchissants
+apportent beaucoup de bruits. De plus la calibration doit être fréquente si les caméras ne sont pas 
+fixe (utilisation de trépieds).
+
+\subsection{Systèmes optiques sans marqueurs}
+Il est également possible d'enregistrer des mouvements 
+sous formes de données de positions avec de simples caméras via une phase
+de post-traitement sur le ou les flux vidéos.
+La précision de ces techniques est faible, en effet,
+il peut être difficile d'estimer les rotations d'un membre humain à cause de
+trop importantes ambiguïtés provenant de l'image ou du manque de points caractéristiques.
+L'étude présenté dans~\cite{gleicher02} souligne la nécessité d'utiliser des hypothèses
+supplémentaire sur ce qui est observé (dynamique des mouvements, limitations géométrique du monde\ldots).
+Par exemple, une technique permettant
+de générer des mouvements physiquement réaliste à partir d'une séquence 
+vidéo monoculaire est présentée dans~\cite{wei10}. L'utilisation
+d'un modèle physique contraint la reconstruction
+du mouvement aux lois de la physique.
+Mais elle permet aussi de calculer
+les couples et les forces de contacts correspondant au mouvement observé.
+Des informations de profondeurs, en plus des images 2D peuvent
+aussi être utilisées pour la reconnaissance de pose humaine~\cite{shotton11}.
+
+\subsection{Dispositifs de suivi électromagnétique}
+Pour ces systèmes, la mesure des distances et des orientations se base sur
+les champs magnétiques créés par un émetteur et captés par un recepteur~\cite{raab79}.
+La figure~\ref{fig:magMocap} montre un exemple de placement de capteurs électromagnétiques
+sur une actrice.
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.4\linewidth]{figures/chapitre4/magMocap.ps}
+  \end{center}
+  \caption[Capteurs magnétiques.]{Un exemple de placement de capteurs issu d'un système de capture de mouvements électromagnétique (image tirée de~\cite{bodenheimer97}).}
+  \label{fig:magMocap}
+\end{figure}
+Lorsqu'un courant est appliqué à un bobinage, un champ magnétique est créé (voir figure~\ref{fig:ringMagnetic}).
+\begin{figure}[p]
+  \begin{center}
+    \resizebox{0.9\textwidth}{!}{
+    \input{figures/chapitre4/ringMagnetic.tex}
+    }
+  \end{center}
+  \caption[Fonctionnement d'un capteurs magnétique.]{Un courant appliqué à une spire crée un champ magnétique $\mbf{H}$, de composante radiale $H_r$,
+  et tangentielle $H_\theta$.}
+  \label{fig:ringMagnetic}
+\end{figure}
+\FloatBarrier
+Les composantes radiale et tangentielle de ce champ magnétique sont décris par:
+\begin{align}
+  H_r & =  \frac{M}{2\pi r^3}\mathrm{cos}(\theta)\\
+  H_\theta & =  \frac{M}{4\pi r^3}\mathrm{sin}(\theta)
+  \label{eq:magField}
+\end{align}
+\noindent où $M = N I S$ est le moment magnétique, $N$ étant le nombre de spires
+de la bobine, $I$ l'intensité du courant et $S$ la surface entouré par une spire.
+Le récepteur mesure les champs magnétiques créés par l'émetteur afin de 
+déterminer leurs distances et leurs orientations relatives.
+Un couple émetteur/récepteur fournit donc des positions 6D.
+La précision des positions calculées décroit avec l'augmentation de la distance
+entre l'émetteur et le récepteur.
+Historiquement, les recepteurs, placés sur l'objet à suivre sont c\^ablés.
+Ceci rendait l'utilisation de ce type de matériel difficile pour des mouvements amples
+ou complexes. Ce n'est que récemment que des systèmes sans fils sont apparus~\cite{vanacht07}.
+Ce type de système est aussi sensible à l'environnement qui
+ne doit pas comporter d'éléments métalliques car ils causent des
+distorsions du champ magnétique qui faussent ainsi l'estimation
+de la position. Cependant, ils présentent
+l'avantage de ne pas avoir de problème d'occlusions.
+De plus, il est possible d'estimer 
+les positions de l'épaule, du coude et du poignet ainsi que le vecteur
+de configuration de dimension sept associé au modèle d'un bras avec seulement deux capteurs 3D
+en effectuant une phase de calibration~\cite{rezzoug10}.
+\subsection{Dispositifs de suivi inertiel}
+Des capteurs inertiels peuvent être utilisés pour effectuer de la 
+capture de mouvements comme par exemple dans~\cite{liu11}.
+La figure~\ref{fig:inertialMocap} montre un capteur inertiel.
+\begin{figure}[t]
+  \begin{center}
+    \subfigure[]{
+    \includegraphics[width=0.4\linewidth]{figures/chapitre4/inertialSensor.ps}
+  \label{fig:inertialMocap}
+    }
+    \subfigure[]{
+    \resizebox{.4\textwidth}{!} {
+      \input{figures/chapitre4/accelerometre.tex}
+    }
+  \label{fig:accelerometre}
+    }
+  \end{center}
+  \caption[Capteurs inertiels.]{(a)~Un capteur inertiel placé pour mesurer les mouvements d'un bras. Photo tirée de~\cite{vanacht07}. 
+  (b)~L'accélération est déterminée à partir de la mesure de la force gr\^ace à la relation $\mbf{F} = m\mbf{a}$}
+\end{figure}
+Ils peuvent être composés d'accéléromètres
+et de gyroscopes. Le suivi d'objets est effectué 
+en déterminant les accélérations et les orientations de ces objets. 
+
+Les accélérations sont déterminées en suivant la seconde loi de Newton reliant
+la résultante des forces $\mbf{F}$ exercées sur un corps de masse $m$ à son accélération $\mbf{a}$:
+$\mbf{F} = m \mbf{a}$. Les accéléromètres contiennent une masse connue attachée à un ressort.
+Lorsqu'une accélération est appliquée à l'accéléromètre, l'inertie va pousser la masse 
+à compresser le ressort. Cette force est ensuite convertie en signal électrique
+gr\^ace par exemple à des capteurs piézoélectriques (voir figure~\ref{fig:accelerometre}).
+%\begin{figure}[t]
+%  \begin{center}
+%  \end{center}
+%  \label{fig:accelerometre}
+%\end{figure}
+L'accélération est ensuite intégrée deux fois pour déterminer la position.
+De la même manière, les gyroscopes permettent de déterminer les positions angulaires
+d'un objet en mesurant les forces centrifuges d'une masse en rotation. Cette fois-ci,
+la force mesurée est proportionnelle à la vitesse angulaire. Une seule intégration
+est donc nécessaire pour avoir une mesure de la position angulaire.
+
+Les capteurs inertiels ont l'avantage d'être relativement facile à
+mettre en \oe uvre mais les mesures dérivent.
+Les erreurs de mesures s'accumulent et par conséquent, 
+l'estimation de la position de l'objet diverge.
+Le suivi d'objet par capteurs inertiels n'est donc efficace que 
+pendant de courtes périodes.
+
+\subsection{Systèmes de capture mécanique}
+Il s'agit de systèmes articulés que l'utilisateur manipule. Les angles des articulations sont
+directement mesurés gr\^ace à des encodeurs. Ils peuvent prendre plusieurs formes en fonction
+du type de données considérés, comme par exemple un petit bras articulé pour obtenir
+une position 6D d'un objet manipulé avec la main, un gant pour obtenir
+les positions de mains ou de doigts ou encore
+un exosquelette si l'on s'intéresse aux mouvements complet du corps humain (voir figure~\ref{fig:mecaMocap}).
+Ces systèmes sont limités par les contraintes mécaniques de ces systèmes et sont très encombrant.
+\begin{figure}[p]
+  \begin{center}
+    \subfigure[Phantom de SensAble.]{
+    \resizebox{.27\textwidth}{!} {
+    \includegraphics{figures/chapitre4/Phantom.eps}
+    }
+    }
+    \subfigure[CyberGlove II de CyberGlove Systems.]{
+    \resizebox{.27\textwidth}{!}{
+    \includegraphics{figures/chapitre4/pg6.eps}
+    }
+    }
+    \subfigure[Gypsy 7 de Animazoo.]{
+    \resizebox{.27\textwidth}{!}{
+    \includegraphics{figures/chapitre4/gypsy7_05.ps}
+    }
+    }
+  \end{center}
+  \caption[Systèmes de capture de mouvements mécaniques.]{(a)~Un bras articulé à six degrés de liberté. La position et l'orientation du stylet est obtenue
+  gr\^ace aux mesures des angles articulaire. (b)~Le gant articulé permet de mesurer la configuration
+  de la main, mais permet également de fournir des positions 6D de la main. (c)~L'exosquelette Gypsy 7
+  qui permet de mesurer les valeurs articulaires correspondant aux mouvements d'un humain.}
+  \label{fig:mecaMocap}
+\end{figure}
+
+\section{Système utilisé}
+Le LAAS-CNRS est équipé du système de capture de mouvements de la société Motion Analysis.
+Le système installé est composé de dix caméras infrarouge (voir figure~\ref{fig:cameraIR}): quatre caméras
+standard (modèle \emph{Hawk} 640x480@200Hz), et six caméras haute résolution (modèle \emph{Eagle} 2352x1728@200Hz). 
+Les données sont capturées à une fréquence de 200Hz. Les caméras sont pilotées par le 
+logiciel nommé Cortex (voir figure~\ref{fig:cortex1}).
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.14\linewidth]{figures/chapitre4/camIR.ps}
+  \end{center}
+  \caption{Une caméra infrarouge.}
+  \label{fig:cameraIR}
+\end{figure}
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.75\linewidth]{figures/chapitre4/cortex1.ps}
+  \end{center}
+  \caption[Logiciel de capture de mouvements.]{Le logiciel de capture de mouvement utilisé au LAAS-CNRS: Cortex de Motion Analysis.}
+  \label{fig:cortex1}
+\end{figure}
+Les caméras sont réparties autour de la zone d'expérimentation suivant le schéma de la figure~\ref{fig:cameraSetUp}.
+Afin d'optimiser le placement des caméras, les caméras à haute résolution 
+sont placés pour couvrir la longueur de la zone d'expérimentation, tandis que les 
+caméras à basse résolution sont placées pour couvrir la largeur de la zone.
+\begin{figure}[p]
+  \begin{center}
+    \resizebox{0.94\linewidth}{!}{
+      \input{figures/chapitre4/cameraSetUp.tex}
+    }
+  \end{center}
+  \caption{Placement des caméras dans la zone d'expérimentation.}
+  \label{fig:cameraSetUp}
+\end{figure}
+La figure~\ref{fig:cameraCoverage} illustre les zones de couvertures des caméras.
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.94\linewidth]{figures/chapitre4/cortex3.ps}
+  \end{center}
+  \caption{Zone de couverture des caméras.}
+  \label{fig:cameraCoverage}
+\end{figure}
+
+D'une manière générale, la capture de mouvements se décompose en plusieurs étapes.
+La qualité du résultat obtenu à chaque étape dépend directement de la précédente 
+(voir la figure~\ref{fig:mocapFlow}).
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.95\linewidth]{figures/chapitre4/mocapFlow.ps}
+  \end{center}
+  \caption{Les différentes étapes pour capturer un mouvement.}
+  \label{fig:mocapFlow}
+\end{figure}
+Un exemple du processus complet de capture de mouvement est présenté dans~\cite{bodenheimer97}.
+
+\subsection{Calibration}
+La calibration permet d'associer les positions dans le monde réel
+et les positions dans l'image des caméras. C'est lors de cette phase que les
+paramètres des caméras sont calculés, ces paramètres
+dépendent des positions et orientations, des focales de l'objectif,
+des facteurs d'echelle suivant les deux axes de l'image et des translations
+d'origine de l'image des caméras.
+Les matrices de projections des caméras dépendent directement
+de ces paramètres.
+Dans le cas de notre système, celle-ci se décompose en deux parties. 
+\subsubsection{Calibration statique}
+La calibration statique permet de définir un repère fixe
+au volume étudié et de déterminer une première estimation
+des paramètres d'au moins une partie des caméras. Une équerre de précision équipée de quatre marqueurs dont les positions
+relatives sont parfaitement connues est utilisée (voir la figure~\ref{fig:Lframe}).
+\begin{figure}[t]
+  \begin{center}
+    \subfigure[]{
+    \resizebox{.41\textwidth}{!} {
+    \includegraphics[width=0.4\linewidth]{figures/chapitre4/lframe.ps}
+    }
+  \label{fig:Lframe}
+    }
+    \subfigure[]{
+    \resizebox{.41\textwidth}{!} {
+    \includegraphics[width=0.4\linewidth]{figures/chapitre4/wand.ps}
+    }
+  \label{fig:wand}
+    }
+  \end{center}
+  \caption[Outil de calibration.]{(a)~L'équerre de calibration définit un repère fixe dans lequel les données seront exprimées. (b)~La 
+  baguette de précision qui est utilisée pour balayer la zone d'expérimentation.}
+\end{figure}
+Les paramètres des caméras
+qui ont les quatre marqueurs dans leurs champs de vision ont alors une bonne première 
+estimation qui sera raffiné par optimisation dans l'étape suivante.
+Les autres caméras auront une mauvaise estimation de leurs paramètres, mais ils seront corrigés
+lors de l'étape suivante.
+
+\subsubsection{Calibration dynamique}
+Elle consiste à balayer, de la manière la plus
+homogène possible, tout l'espace d'expérimentation avec une baguette équipée de trois marqueurs
+dont les positions relatives sont connues avec précision (voir figure~\ref{fig:wand}).
+Les données collectées sont utilisées pour calculer de manière plus précise
+les paramètres de toutes les caméras par optimisation.
+La couverture des données dans l'espace permet d'obtenir une homogénéisation
+sur la correspondance entre les points dans l'image des caméras et dans 
+l'espace. C'est pour cette raison qu'il est important de balayer l'espace de manière homogène (ne pas se concentrer
+sur une zone ou en négliger).
+
+\subsection{Placement des marqueurs}
+Idéalement pour capturer des mouvements humains,
+les marqueurs doivent être placés au centre des articulations, ou au plus proche possible
+pour éviter que lors d'une rotation d'une articulation, le marqueur associé
+à celle-ci translate ou bouge par rapport à ce centre. 
+La configuration des marqueurs ne doit présenter aucune 
+symétrie afin que le suivi temporel des marqueurs ne soit pas perturbé. En cas de symétrie,
+des permutations d'identifiant de marqueurs peuvent apparaitre.
+
+Nous donnons un exemple de placement de marqueurs qui peut être modifié selon
+les besoins dans la figure~\ref{fig:markerSet}. Dans cet exemple,
+des petites planches sont placées sur les poignets
+pour les alonger. De cette façon, les trois marqueurs placés sur les mains ne forment pas
+un triangle trop proche d'un triangle équilatéral, et sont plus facile à suivre par le logiciel
+de capture de mouvements. Le nombre de marqueurs peut être plus grand pour introduire des données
+redondantes pour compenser les données des marqueurs dont on sait à l'avance
+qu'ils vont être être occlus.
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.9\linewidth]{figures/chapitre4/markerSet.ps}
+  \end{center}
+  \caption[Placements des marqueurs.]{Exemple de configuration de marqueurs pour capturer des mouvements humains. Des
+  petites planches sont utilisées pour allonger les poignets.}
+  \label{fig:markerSet}
+\end{figure}
+
+\subsection{Squelette virtuel}
+\subsubsection{Définition du squelette}
+Le format de données calculées par défaut par le système est la liste des 
+coordonnées 3D dans le repère de la zone de capture
+de tous les marqueurs. Pour des mouvements humains,
+il est plus intéressant de travailler en utilisant des corps et leurs transformations
+dans l'espace. Pour cela, un squelette est construit en hiérarchisant un ensemble
+de corps sous la forme d'un arbre. Chaque repère associé à un corps est défini par un ensemble de trois marqueurs,
+définissant l'origine, la direction de l'axe de la longueur et la direction de l'axe 
+plan (voir figure~\ref{fig:bone}).
+\begin{figure}[p]
+  \begin{center}
+    \subfigure[]{
+    \includegraphics[width=0.5\linewidth]{figures/chapitre4/skelcrop.ps}
+    }
+    \hspace{50px}
+    \subfigure[]{
+    \includegraphics[width=0.2\linewidth]{figures/chapitre4/bone.ps}
+    }
+  \end{center}
+  \caption[Squelette virtuel.]{(a)~Un squelette virtuel pour un humain. (b)~Définition du repère associé à un corps à partir de trois marqueurs.}
+  \label{fig:bone}
+\end{figure}
+La figure~\ref{fig:bone} illustre un exemple de squelette associé à la configuration
+des marqueurs présentée plus tôt.
+%\begin{figure}[p]
+%  \begin{center}
+%  \end{center}
+%  \label{fig:skelMocap}
+%\end{figure}
+
+\subsubsection{Interprétation des données}
+Les données relatives au squelette sont exportées au format développé par Motion Analysis appelé
+HTR (hierarchical translation-rotation). Le fichier de sortie se décompose en quatre parties:
+\begin{itemize}
+  \item \emph{Header}: Informations générales.
+  \item \emph{Segment names \& Hierarchy}: Graphe de hiérarchie des corps du squelette, avec pour n\oe ud racine \emph{GLOBAL}.
+  \item \emph{Base position}: Composantes de transformation initiale des corps relativement à son parent, 
+    qu'on note dans la suite $\mbf{T}_{j,0}$ et $\mbf{R}_{j,0}$.
+  \item \emph{Frame data}: Composantes de transformation à l'instant $Fr=i$ qu'on note $\mbf{T}_j(i)$, $\mbf{R}_j(i)$ et
+    $\mbf{S}_j(i)$.
+\end{itemize}
+La figure~\ref{fig:htr1} illustre un extrait d'un fichier \emph{htr}.
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.8\linewidth]{figures/chapitre4/htrAll.ps}
+  \end{center}
+  \caption{Extrait d'un fichier HTR.}
+  \label{fig:htr1}
+\end{figure}
+%\begin{figure}[t]
+%  \begin{center}
+%    \includegraphics[width=0.8\linewidth]{figures/chapitre4/htr2.ps}
+%  \end{center}
+%  \caption{Extrait de la quatrième partie d'un fichier HTR.}
+%  \label{fig:htr2}
+%\end{figure}
+La transformation $\mbf{M}_j$ appliquée à un corps $j$ par rapport
+à son parent à l'instant $Fr=i$ se calcule gr\^ace à l'équation:
+\begin{equation}
+  \mbf{M}_j(i) = \mbf{T}_{j,0} \mbf{T}_j(i) \mbf{R}_{j,0} \mbf{R}_j(i) \mbf{S}_j(i)
+  \label{eq:localMocapTransf}
+\end{equation}
+\noindent où $\mbf{T}_j(i)$ représente la composition des transformations de translation 
+$\left[tx_{j,0}~ty_{j,0}~tz_{j,0}\right]^T$
+issues de la partie \emph{Base~position} et $\left[tx_j(i)~ty_j(i)~tz_j(i)\right]^T$ issues de la partie \emph{Frame~data}.
+\begin{align}
+  \mbf{T}_{j,0} & = \left( \begin{array}{cccc}
+    1 & 0 & 0 & tx_{j,0}\\
+    0 & 1 & 0 & ty_{j,0}\\
+    0 & 0 & 1 & tz_{j,0}\\
+    0 & 0 & 0 & 1
+		    \end{array}
+	      \right)
+  \label{eq:mocapTj0}\\
+  \mbf{T}_j(i) & = \left( \begin{array}{cccc}
+    1 & 0 & 0 & tx_j(i)\\
+    0 & 1 & 0 & ty_j(i)\\
+    0 & 0 & 1 & tz_j(i)\\
+    0 & 0 & 0 & 1
+		    \end{array}
+	      \right)
+  \label{eq:mocapTji}
+\end{align}
+\noindent $\mbf{R}_{j,0}$ est la composition de rotation calculée à partir des angles de la partie
+\emph{Base~position} selon l'ordre des angles d'Euler défini dans \emph{Header}. Dans
+l'exemple choisi, l'ordre est $ZYX$
+donc $\mbf{R}_{j,0} = \mbf{R}_z \mbf{R}_y \mbf{R}_x$. De même $\mbf{R}_j(i)$ est la composition de rotation
+à partir des données de la partie \emph{Frame~data}. Enfin $\mbf{S}_j(i)$ est la matrice de mise à l'échelle:
+\begin{equation}
+  \mbf{S}_j(i) =  \left( \begin{array}{cccc}
+		      SF_j(i) & 0 & 0 & 0\\
+		      0 & SF_j(i) & 0 & 0\\
+		      0 & 0 & SF_j(i) & 0\\
+		      0 & 0 & 0 & 1
+		    \end{array}
+	      \right)  
+  \label{eq:mocapSi}
+\end{equation}
+\noindent où $SF_j(i)$ est le facteur d'échelle à l'instant $Fr=i$.
+
+La transformation $\tensor[^{W}]{\mathbf{M}}{_{n}}$ dans le repère de la zone de 
+capture (repère défini par l'équerre lors de la calibration) d'un corps $n$ ayant comme parent
+un corps $n-1$ est obtenu gr\^ace à l'équation:
+\begin{equation}
+  \tensor[^{W}]{\mathbf{M}}{_{n}} = \prod_{j=0}^{n} \mbf{M}_j
+  \label{eq:globalMocap}
+\end{equation}
+
+\FloatBarrier
+\subsection{Post-traitement des données}
+Bien que les caméras soient capables de fournir des données propres,
+les contraintes liées à l'environnement perturbent l'interprétation des données.
+Ces contraintes peuvent par exemple provenir des occlusions de marqueurs, d'un marqueur
+endommagé, des erreurs logiciels (mauvais étiquetage de marqueurs), 
+du bruit numérique ou d'une mauvaise calibration. 
+Les données collectées peuvent présenter des problèmes de discontinuités ou du bruit parasite.
+Cortex dispose d'outils qui permettent de corriger les intervalles de temps où un marqueur 
+n'est plus étiqueté, en se basant
+sur la configuration géométrique des marqueurs (fonction \emph{rectify}) et des outils d'interpolations.
+Les parties manquantes dans les trajectoires peuvent être interpolées linéairement (fonction \emph{linear join}), 
+à l'aide de splines cubiques (fonction \emph{cubic join})
+ou encore en générant des données en fonction de la configuration géométrique de trois autres marqueurs 
+dont les trajectoires sont complètes (fonction \emph{virtual join}).
+La figure~\ref{fig:interpolMocap} illustre les méthodes
+d'interpolation linéaire et par splines cubiques, et la figure~\ref{fig:virtualJoin}
+illustre la méthode \emph{virtual join}. 
+\begin{figure}[p]
+  \begin{center}
+    \subfigure[]{
+    \includegraphics[width=0.10\linewidth]{figures/chapitre4/lineJoin.ps}
+    \label{fig:interpolMocap}
+    }
+    \hspace{50px}
+    \subfigure[]{
+    \includegraphics[width=0.55\linewidth]{figures/chapitre4/joinvirtual.ps}
+    \label{fig:virtualJoin}
+    }
+  \end{center}
+  \caption[Interpolation de la position de marqueurs.]{(a)~La trajectoire incomplète d'un marqueur est interpolé linéairement ou à l'aide d'une spline cubique.
+  (b)~La trajectoire incomplète d'un marqueur est reconstruite à partir
+  de sa configuration géométrique par rapport à trois autres marqueurs.}
+\end{figure}
+%\begin{figure}[t]
+%  \begin{center}
+%  \end{center}
+%  \label{fig:virtualJoin}
+%\end{figure}
+Cette dernière technique 
+est intéressante: si on sait que le mouvement à capturer va  entrainer des occlusions sur un ou plusieurs
+marqueurs particuliers, alors on peut ajouter des marqueurs redondants sur le corps en question
+pour pouvoir lors de la phase de post-traitement reconstruire les trajectoires des 
+marqueurs masqués.
+La figure~\ref{fig:BadData} illustre des données incomplètes d'un marqueur
+situé en bas du poignet droit. On remarque également que le signal est légèrement bruité.
+\begin{figure}[p]
+  \begin{center}
+  \resizebox{.75\textwidth}{!} {
+    \input{figures/chapitre4/RwristBGap.tex}
+    }
+  \end{center}
+  \caption[Discontinuités de la trajectoire d'un marqueur.]{La composante en $x$ de la trajectoire du marqueur placé en bas du poignet droit présente
+  des discontinuités et du bruit à hautes fréquences.}
+  \label{fig:BadData}
+\end{figure}
+La figure~\ref{fig:RwristVjoin} illustre l'interpolation de type \emph{virtual join} de la trajectoire de ce marqueur
+en utilisant les positions des marqueurs situés au coude et en haut du poignet droit.
+\begin{figure}[p]
+  \begin{center}
+  \resizebox{.75\textwidth}{!} {
+    \input{figures/chapitre4/RwristBGapVjoin.tex}
+    }
+  \end{center}
+  \caption{Interpolation de la trajectoire du marqueur en bas du poignet droit.}
+  \label{fig:RwristVjoin}
+\end{figure}
+L'étiquetage de marqueurs peut aussi être permuté manuellement si les marqueurs ont été mal identifiés.
+Il est possible de lisser les trajectoires des marqueurs selon deux méthodes: un filtre de moyenne glissante ou
+un filtre de Butterworth.
+Le filtre de Butterworth est un filtre passe bande paramétrable possédant
+de bonnes propriétés pour l'étude des mouvements biomécaniques. Ce filtre permet 
+de retirer les composantes du mouvement qui ont des fréquences trop élevées pour avoir été réalisés
+par un humain.
+
+\section{Imitation: Reproduction de mouvements capturés}
+La pile de t\^aches permet de générer un mouvement à partir d'une référence générique.
+Les outils de capture de mouvements peuvent donc être utilisés pour fournir 
+une référence n'étant pas issue d'un modèle mathématique. Il est ainsi possible de générer
+des mouvements qui ne représentent pas forcement l'exécution d'une t\^ache robotique et son donc plus expressif.
+Ce paragraphe décrit comment des données issues de la capture de mouvement d'un humain
+peuvent être utilisées comme trajectoire de référence pour une t\^ache qui
+doit être exécuté par un robot.
+Dans tout les cas, un
+changement de repère est nécessaire pour pouvoir calculer l'erreur du suivi. On pourra utiliser par
+exemple comme référentiel commun un repère dont l'axe 
+$\boldsymbol{z}$ est normal au sol, la direction de l'axe $\boldsymbol{y}$
+est définie par la direction du vecteur $\left( \mbf{p}_{\textsf{Rwaist}} - \mbf{p}_{\textsf{Lwaist}} \right)$
+où $\mbf{p}_{\textsf{Rwaist}}$ (respectivement $\mbf{p}_{\textsf{Lwaist}}$) est 
+la position d'un point situé sur le côté droit (respectivement gauche) du bassin.
+Un deuxième changement de repère sera nécessaire si pour une posture \emph{identique},
+les repères attachés aux corps de l'humain et du robot n'ont pas des transformations identiques par
+rapport au référentiel d'origine (voir figure~\ref{fig:changeRepere}).
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.95\textwidth}{!}{
+    \input{figures/chapitre4/refChange.tex}
+    }
+  \end{center}
+  \caption[Changement de repères du squelette de la capture de mouvement vers le robot.]{Un changement de repère est nécessaire: les repères associés aux bras ne sont pas concordant.
+  La transformation homogène $\tensor[^{\textsf{m}_j}]{M}{_{\textsf{r}_j}}$ est calculée en utilisant 
+  des postures concordantes sur le squelette de la capture de mouvements et le modèle du robot.}
+  \label{fig:changeRepere}
+\end{figure}
+
+\subsection{T\^aches et suivi de trajectoires}
+D'une manière générale, les trajectoires des t\^aches sont directement
+reliées à leurs formulations mathématiques $\mbf{e} = \mbf{s}(t) - \mbf{s}^*(t)$.
+Par exemple, pour attraper
+une balle, la main doit se déplacer en direction de la balle: $\mbf{e}(t) = \mbf{p}_{\textsf{main}}(t) - \mbf{p}_{\textsf{balle}}^*$. 
+En revanche, certaines t\^aches ont des trajectoires qui ne suivent pas un motif
+particulier.
+Si $\mbf{s}^*$ est observable, alors des t\^aches de suivi de trajectoires peuvent être
+utilisées dans une pile de t\^aches pour reproduire les parties choisies d'un mouvement.
+Nous considérons qu'il y a une imitation lorsque le mouvement doit être adapté 
+à une structure cinématique différente de la structure sur laquelle le mouvement a été observé.
+
+Si nous possédons des connaissances sur l'action observée, nous pouvons choisir
+explicitement des t\^aches pertinentes à reproduire. Par opposition, des t\^aches apparaissent
+implicitement si par exemple les trajectoires articulaires sont strictement recopiées.
+Par exemple considérons le cas du mouvement
+d'attente. Ce mouvement est défini comme étant 
+le mouvement inconscient qu'un humain produit
+lorsqu'il \emph{ne fait rien}.
+Il semble très difficile
+de définir simplement ce mouvement sous forme d'une combinaison de t\^ache,
+c'est-à-dire d'un modèle causal,
+sans donner une interprétation de ses caractéristiques, par exemple en remontant
+à la structure élastique de l'actionnement humain.
+Nous considérons que le mouvement d'attente d'un humain se traduit
+par les mouvements de ses bras, du torse et de la tête.
+Par conséquent le mouvement d'attente peut être représenté par une pile de
+t\^aches constituée de t\^aches de suivi de trajectoire des mains, et de la t\^ete.
+Le torse n'est pas choisi dans la pile car les chaînes articulaires
+contrôlant les mains et la t\^ete contiennent le torse.
+Le couplage des t\^aches entrainera le torse d'une manière cohérente dans le mouvement 
+des autres membres.
+On note que l'utilisation de la capture de mouvements nous permet de générer 
+un mouvement expressif où le robot \emph{ne fait rien}. Alors
+qu'en ne considérant l'action \emph{ne rien faire} d'un point de vue 
+strictement robotique, la commande générée correspondrait à une vitesse
+nulle sur chaque articulation.
+
+\subsection{T\^aches possibles et mesures des trajectoires de références}
+%\subsubsection{Position des mains}
+Pour une t\^ache d'atteinte d'une position 3D dans l'espace cartésien,
+la trajectoire de la position mesurée $\hat{\mbf{p}}$ d'un marqueur peut être utilisée comme le
+signal de référence pour une t\^ache de suivi en position 3D (voir figure~\ref{fig:handDemo}).
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.7\textwidth}{!}{
+    \input{figures/chapitre4/handCrop.tex}
+    }
+  \end{center}
+  \caption[T\^ache de suivi de trajectoire.]{La position mesurée $\hat{\mbf{p}}$ d'un marqueur est utilisé comme
+  référence pour une t\^ache de suivi de position 3D.}
+  \label{fig:handDemo}
+\end{figure}
+%\subsubsection{Orientation du regard}
+
+L'orientation du regard peut être approchée par l'orientation de la tête.
+En utilisant les positions de trois marqueurs placés sur la tête, on définit un repère et la matrice
+de transformation de rotation par rapport au repère du monde représentera l'orientation 
+de la tête dans ce repère (voir figure~\ref{fig:gazeDemo}). 
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.7\textwidth}{!}{
+    \input{figures/chapitre4/gazeDemo.tex}
+    }
+  \end{center}
+  \caption[Mesure de l'orientation de la t\^ete.]{Un repère est associé à la tête à partir de trois marqueurs. La matrice de transformation du repère
+  d'origine $\mathcal{R}_{\textsf{w}}$ vers le repère associé à la tête $\mathcal{R}_{\textsf{head}}$ 
+  $\tensor[^{\textsf{w}}]{\mathbf{M}}{_{\textsf{head}}}$ donne l'orientation de la tête.}
+  \label{fig:gazeDemo}
+\end{figure}
+%\subsubsection{Approximation de la trajectoire du centre de masse}
+La position du centre de masse est utilisé comme un critère de stabilité statique:
+sa projection sur le sol doit rester à l'intérieur du polygone de support défini par
+les deux pieds d'un humanoïde. Une t\^ache de suivi de position du centre
+de masse nécessite la connaissance d'une trajectoire de référence.
+Le problème est que la position du centre de masse n'est pas directement observable
+avec les outils de capture de mouvements. Il est cependant possible de
+faire une approximation de sa trajectoire projetée au sol pour obtenir
+une trajectoire de référence satisfaisant la contrainte d'équilibre statique. Dans~\cite{montecillo10},
+une approximation de la trajectoire du centre de masse projetée au sol se basant 
+sur les mouvements de la tête est proposée afin d'imiter des mouvements de transfert de point
+d'appui:
+\begin{itemize}
+  \item lors d'une phase de double support, la projection au sol du centre de masse évolue suivant 
+    un axe défini par la position des deux pieds, et son déplacement est proportionnel 
+    à la projection orthogonale du vecteur vitesse de la tête projeté au sol sur l'axe défini par les pieds,
+  \item lors d'une phase de simple support, la projection du centre de masse se déplace
+    suivant le vecteur vitesse de la tête projeté au sol.
+\end{itemize}
+Cette approximation est justifiée par l'importance du mouvement de la tête dans des mouvements humains
+qui est souligné dans les études en neurosciences~\cite{sreenivasa09}.
+La figure~\ref{fig:comApprox} illustre cette approximation.
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \resizebox{.47\textwidth}{!} {
+    \input{figures/chapitre4/doubleSupportCom.tex}
+    }
+    }
+    \subfigure{
+    \resizebox{.47\textwidth}{!} {
+    \input{figures/chapitre4/simpleSupportCom.tex}
+    }
+    }
+  \end{center}
+  \caption[Approximation de la trajectoire du centre de masse.]{Une approximation du déplacement du centre de masse lors d'un mouvement est effectuée
+  en fonction de la vitesse de déplacement de la tête pour le cas d'un mouvement en
+  double support et en simple support.}
+  \label{fig:comApprox}
+\end{figure}
+\FloatBarrier

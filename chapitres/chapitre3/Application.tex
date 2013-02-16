@@ -1,0 +1,366 @@
+\section{Applications de la pile de t\^aches}
+Dans ce paragraphe les différents types de t\^aches robotiques utilisées dans la suite des travaux
+sont décrites. Puis un exemple d'exécution de t\^aches en parallèle est donné pour
+illustrer les effets des couplages des t\^aches.
+Dans le chapitre suivant nous présentons un exemple applicatif de génération de 
+mouvement dans le cadre de l'imitation sans reconnaissance d'un mouvement
+humanoïde. 
+\subsection{Exemples de t\^aches robotique}
+\subsubsection{T\^ache position 6D}
+Un repère qui est attaché à un corps du robot doit atteindre une position 6D désirée.
+L'erreur correspond à la transformation homogène $\mbf{M}_e = \mbf{M}(\mbf{M}^*)^{-1}$ permettant de passer de la position
+actuelle à la position désirée avec 
+$\mbf{M} = \left( \begin{array}{cc} \mbf{R}& \mbf{t}\\ \mbf{0} & \mbf{1} \end{array} \right)$.
+La figure~\ref{fig:feature6d} illustre ce type de t\^ache.
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.95\textwidth}{!}{
+    \input{figures/chapitre3/feature6d.tex}
+    }
+  \end{center}
+  \caption{Exemple d'une t\^ache de position 6D.}
+  \label{fig:feature6d}
+\end{figure}
+Cette représentation matricielle est redondante car il suffit de trois variables
+indépendante pour identifier une matrice de rotation dans le groupe des rotations
+SO(3). Une représentation vectorielle dans le groupe SE(3) (\emph{Special Euclidian Group} qui 
+est isomorphe à $\mathbb{R}^3 \times$SO(3) ) est donc préférée.
+Le vecteur erreur $\mbf{e}$ est défini par:
+\begin{equation}
+  \mbf{e} = \left( \begin{array}{c} \mbf{t}_e \\ \mbf{u}_{\theta, e} \end{array} \right)
+  \label{eq:feature6dE}
+\end{equation}
+\noindent où $\mbf{u}_\theta$ est le vecteur représentant une rotation équivalente
+à une matrice de rotation $\mbf{R}$: sa direction correspond à l'axe de rotation
+et sa norme $\Vert \mbf{u}_\theta \Vert$ correspond à la valeurs de l'angle de rotation par rapport à son axe (voir figure~\ref{fig:utheta}).
+On note que pour un suivi de trajectoire, l'erreur $\mbf{e}(t)  = \left( \begin{array}{c} \mbf{t}_e(t) \\ \mbf{u}_{\theta, e}(t) \end{array} \right) $ doit être petit.
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.1\textwidth}{!}{
+    \input{figures/chapitre3/utheta.tex}
+    }
+  \end{center}
+  \caption{Représentation d'une rotation avec un vecteur.}
+  \label{fig:utheta}
+\end{figure}
+
+Dans la suite du document, on notera $\mbf{e}_{rh}$ la t\^ache de prise droite,
+asservissant le point de contrôle de la dernière articulation du poignet
+(telle que donnée dans le modèle classique du robot), voir figure~\ref{fig:feature6d}.
+Cette t\^ache met en \oe uvre les chaînes articulaires du \emph{free flyer}, du torse
+et du bras droit. Symétriquement, la t\^ache de prise main gauche sera noté $mbf{e}_{lh}$.
+On nommera les t\^aches de position 6D \emph{prise orientée}.
+
+\subsubsection{T\^ache de position 3D et de rotation 3D}
+Il est possible de ne sélectionner qu'une partie des dimensions 
+d'une t\^ache de position 6D en supprimant les lignes de la jacobienne
+correspondant aux dimensions que l'on ne veut pas considérer.
+On peut ainsi définir des t\^aches de positions dans n'importe quel
+sous-espace de dimensions inférieures.
+Par convention dans la suite du manuscrit, sauf mention contraire, lorsque l'on parle de t\^ache de position 3D,
+nous ne considérons que les composantes de translations: 
+\begin{equation}
+\mbf{e} = \mbf{t}_e
+\label{eq:taskPosition}
+\end{equation}
+De même, lorsque l'on parle de t\^ache de rotation 3D,
+   nous ne considérons que les composantes de rotations:
+\begin{equation}
+\mbf{e} = \mbf{u}_{\theta, e} 
+\label{eq:taskRotation}
+\end{equation}
+
+Dans la suite du document, les t\^aches nommées \emph{prise} sont des t\^aches
+de position en 3D. 
+
+\subsubsection{T\^ache de position du centre de masse}
+L'équilibre statique d'un robot humanoïde est vérifiée lorsque la 
+projection au sol du centre de masse (com) est à l'intérieur du polygone de support du robot
+(voir figure~\ref{fig:supportPoly}).
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.3\textwidth}{!}{
+    \input{figures/chapitre3/supportPoly.tex}
+    }
+  \end{center}
+  \caption{Le polygone de support est défini par les frontières des empreintes de pieds.}
+  \label{fig:supportPoly}
+\end{figure}
+Il est donc intéressant de contrôler la position du centre de masse. Sa position est
+calculée en fonction de la position du centre de masse de chacun des corps composant le robot:
+\begin{equation}
+  \mbf{p}_{\textsf{com}} = \frac{1}{\sum_i m_i} \sum_i m_i\mbf{p}_{\textsf{com}_i}
+  \label{eq:com}
+\end{equation}
+La t\^ache de position du centre de masse correspond à un cas particulier 
+de la t\^ache de position 3D: les colonnes de la jacobienne associée 
+à cette t\^ache sont pondérées par les masses des corps du robot~\cite{boulic96, sugihara02}.
+L'erreur est donc exprimé par:
+\begin{equation}
+e = \mbf{p}_{com} - \mbf{p}_{com}^*
+\label{eq:taskCom}
+\end{equation}
+
+\subsubsection{T\^ache regard}
+Cette t\^ache consiste à centrer un point dans le plan image d'une caméra
+situé au niveau de la t\^ete du robot (voir figure~\ref{fig:featureVis}).
+Nous décrivons brièvement le principe général dans ce paragraphe. Une description
+complète, avec notamment le calcul de la jacobienne est présentée dans~\cite{espiau92, chaumette06, chaumette07}.
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.95\textwidth}{!}{
+    \input{figures/chapitre3/featureVis.tex}
+    }
+  \end{center}
+  \caption[T\^ache de regard.]{La t\^ache de regard centre un point $\mbf{p}^*$ de l'espace
+  dans le plan image de la caméra situé au niveau de la tête du robot.}
+  \label{fig:featureVis}
+\end{figure}
+Un point $\mbf{M} = \left( \begin{array}{c} X\\ Y\\ Z\end{array} \right)$ dans l'espace
+est projeté dans l'image d'une caméra, ayant un centre optique $\mbf{C}$ et une 
+distance focale $f$, en un point $m$ (voir figure~\ref{fig:cameraProj}).
+La position du point $m = \left( \begin{array}{c} x\\ y \end{array} \right)$ est alors obtenue par la relation:
+\begin{equation}
+  \left( \begin{array}{c} x\\ y \end{array} \right) = 
+    \left( \begin{array}{c} Xf/Z\\ Yf/Z \end{array} \right) 
+  \label{eq:camProj3D}
+\end{equation}
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.4\textwidth}{!}{
+    \input{figures/chapitre3/cameraProj.tex}
+    }
+  \end{center}
+  \caption{Un point $\mbf{M}$ dans l'espace se projète en un point $m$ dans l'image de la caméra.}
+  \label{fig:cameraProj}
+\end{figure}
+Ainsi le vecteur erreur est défini par :
+\begin{equation}
+  \mbf{e} = \left( \begin{array}{c} x_e \\ y_e \end{array} \right)
+    = \left( \begin{array}{c} x-x^* \\ y-y^* \end{array} \right)
+  \label{eq:visError}
+\end{equation}
+Un exemple d'utilisation de cette t\^ache est présenté dans~\cite{mansard07a}.
+
+\subsubsection{T\^ache double support}
+En supposant que les deux pieds du robot sont posés au sol,
+la t\^ache de double support consiste à conserver une transformation géométrique
+constante entre le repère attaché au pied gauche, et le repère attaché au pied droit.
+Ainsi les deux pieds resteront en contact avec le sol (voir figure~\ref{fig:doubleSupport}).
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.4\textwidth}{!}{
+    \input{figures/chapitre3/doubleSupport.tex}
+    }
+  \end{center}
+  \caption[T\^ache de double support]{La t\^ache double support permet de garder une transformation constante
+  égale à $\mbf{M}^*$ entre les repères attachés aux deux pieds du robot $\mathcal{R}_d$ et $\mathcal{R}_g$.}
+  \label{fig:doubleSupport}
+\end{figure}
+Il s'agit en fait d'un autre cas particulier de la t\^ache de position 6D. 
+La transformation entre deux repères attachés
+à deux corps du robot doit rester constante:
+\begin{equation}
+\mbf{e} = \left( \begin{array}{c} \tensor[^{r}]{\mbf{t}}{_{l}} \\ \tensor[^{r}]{\mbf{u}}{_{\theta, l}} \end{array} \right)
+\label{eq:taskRelative}
+\end{equation}
+\noindent avec $\tensor[^{r}]{\mbf{t}}{_{l}}$ la translation entre un repère attaché
+au pied droit et un repère attaché au pied gauche et $\tensor[^{r}]{\mbf{u}}{_{\theta, l}}$
+la rotation entre un repère attaché au pied droit et un repère attaché au pied gauche.
+
+\subsubsection{T\^ache de posture}
+Une t\^ache de posture permet de définir un état référence dans l'espace de configuration:
+\begin{equation}
+  \mbf{e} = \mbf{q} - \mbf{q}^*
+  \label{eq:postureTask}
+\end{equation}
+La figure~\ref{fig:posture} illustre une t\^ache de posture.
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.3\textwidth}{!}{
+    \input{figures/chapitre3/posture.tex}
+    }
+  \end{center}
+  \caption[T\^ache de posture]{Un exemple de t\^ache de posture, pour l'articulation d'une jambe. $\mbf{q}^*$ étant la 
+  configuration désirée.}
+  \label{fig:posture}
+\end{figure}
+
+La correction de l'erreur agit directement sur $\mbf{q}$ et la jacobienne est une matrice identité.
+Le contrôle de la posture pour un robot humanoïde est 
+étudié en détail dans le chapitre 4 de~\cite{sentis07}. Les t\^aches de posture
+sont utilisées pour optimiser des critères de performances (comme les efforts des actionneurs)
+et de reproduire des comportements humain.
+
+\subsection{Couplage des t\^aches}
+Gr\^ace au formalisme de la fonction de t\^ache
+et de la représentation du mouvement sous forme
+de pile de t\^aches il est possible de combiner 
+de manière efficace des t\^aches indépendantes à réaliser
+pour générer un mouvement pour un robot.
+Un couplage entre des t\^aches apparait si pour les réaliser il est nécessaire
+d'utiliser des sous-chaînes articulaires communes.
+En considérant la pile de t\^aches illustrée dans la figure~\ref{fig:couplingSot},
+les t\^aches de regard, et de position de mains gauche et droite  ont des
+influences mutuelles.
+\begin{figure}[t]
+  \begin{center}
+    \begin{tabular}{|c|}
+      \hline
+      Main gauche\\
+      \hline
+      Main droite\\
+      \hline
+      Regard\\
+      \hline
+      Centre de masse\\
+      \hline
+      Double support\\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{La pile de t\^aches utilisé pour illustrer le couplage.}
+  \label{fig:couplingSot}
+\end{figure}
+
+La figure~\ref{fig:fullSot} illustre le mouvement
+complet issu de cette pile de t\^aches. Pour illustrer les 
+couplages, les différentes t\^aches de la piles sont
+isolées pour générer plusieurs mouvements. 
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GRL1.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GRL2.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GRL3.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GRL4.ps}
+    }
+    }
+  \end{center}
+  \caption[Exemple de t\^aches couplées dans un mouvement.]{Un exemple de mouvement comportant des t\^aches couplées. Les t\^aches
+  exécutées sont la t\^ache de double support, le positionnement du centre de masse,
+  l'orientation du regard, le positionnement de la main droite et gauche.}
+  \label{fig:fullSot}
+\end{figure}
+
+La pile de t\^aches de base comporte les t\^aches de double support
+et de positionnement du centre de masse.
+La t\^ache de regard est ajoutée. Pour exécuter 
+cette dernière t\^aches, le robot utilise son torse pour se pencher en avant.
+Les bras du robot sont donc entraînés par le torse.
+Un mouvement au niveau notamment de la main droite
+peut être observé alors qu'aucune t\^ache ne contrôle explicitement
+le bras droit (voir figure~\ref{fig:gazeCoupling}).
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/G1.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/G2.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/G3.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/G4.ps}
+    }
+    }
+  \end{center}
+  \caption[T\^aches de double support, de centre de masse et de regard.]{Le mouvement est généré à partir des t\^aches de double support,
+  de positionnement du centre de masse et de la t\^ache de regard.}
+  \label{fig:gazeCoupling}
+\end{figure}
+En ajoutant la t\^ache de position de la main droite avec une position
+de référence à l'avant du robot, le mouvement de la main
+droite est naturellement modifié. Cependant, le mouvement de la main gauche est aussi
+modifié (figure~\ref{fig:gazeRightArm}). Le déplacement de la main gauche 
+est causé par le couplage de la t\^ache main droite
+et la t\^ache de positionnement du centre de masse en effet, lorsque la main droite
+se déplace vers l'avant, le centre de masse se déplace aussi dans cette
+direction. Pour compenser le déplacement du centre de masse causé par
+le déplacement de la main droite, il est nécessaire de déplacer la main gauche.
+Le mouvement du torse est également modifié par rapport au mouvement ne faisant intervenir que
+le regard.
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GR1.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GR2.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GR3.ps}
+    }
+    }
+    \subfigure{
+    \resizebox{0.36\linewidth}{!}{
+    \includegraphics[trim=250px 0px 250px 0px, clip=true]{figures/chapitre3/GR4.ps}
+    }
+    }
+  \end{center}
+  \caption[Couplage de la main et du torse.]{La t\^ache de positionnement de la main droite perturbe
+  la position du torse et de la main gauche.}
+  \label{fig:gazeRightArm}
+\end{figure}
+
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+%\subsection{Application de la fonction de t\^ache pour la reconnaissance et l'imitation}
+%\label{chap:basics:sec:application}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+%Nous avons vu précédemment que le formalisme de la fonction
+%de t\^aches permettait de générer des mouvements en créant une loi
+%de commande satisfaisant l'exécution d'un ensemble de t\^aches 
+%rangées par ordre de priorité. 
+%Dans ce paragraphe nous présentons une autre application
+%du formalisme de la fonction de t\^aches, qui sera développé dans le chapitre 5,
+%à savoir utiliser ce formalisme pour effectuer
+%de la reconnaissance de t\^aches.
+%
+%Ici, la reconnaissance
+%de t\^aches consiste à déterminer l'ensemble des t\^aches (ou contr\^oleurs)
+%qui ont été utilisées pour générer le mouvement observé (voir la figure~\ref{fig:sotReco}).
+%\begin{figure}[t]
+%  \begin{center}
+%    \includegraphics[width=\linewidth]{figures/chapitre3/sotReco.ps}
+%  \end{center}
+%  \caption{Un mouvement est observé, puis après analyse, les t\^aches qui sont les plus probablement actives sont sélectionnées
+%  parmi un ensemble de t\^aches candidates. Les valeurs numériques associées à ces t\^aches sont calculées. Ainsi une
+%  pile de t\^aches est complètement reconstruite, permettant de générer des lois de commande pour n'importe quel
+%  robot.}
+%  \label{fig:sotReco}
+%\end{figure}
+%Le mouvement observé est analysé en se basant sur la connaissance 
+%du comportement des t\^aches ainsi que la connaissance de toutes les t\^aches qui
+%sont susceptibles d'être utilisées.
+%Gr\^ace à ce formalisme, l'imitation est une conséquence directe de la reconnaissance,
+%puisqu'imiter un mouvement revient à exécuter une pile de t\^aches identique.

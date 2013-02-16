@@ -1,0 +1,199 @@
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\section{Exp\'erimentation sur l'humain}
+\label{chap:xpHumain}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+La méthode de reconnaissance de t\^aches présentée dans ce chapitre donne
+de très bon résultats lorsque l'on connaît à la fois le modèle
+des t\^aches mis en \oe uvre, et le modèle géométrique 
+du robot pour calculer les différentes opération de projections. 
+La reconnaissance de t\^aches pour le robot humanoïde se basait sur la connaissance
+parfaite du comportement du robot lors de l'exécution d'une t\^ache.
+Nous avions appliqué comme exemple de comportement, une décroissance exponentielle.
+On souhaite maintenant étudier la possibilité
+d'appliquer la méthode de reconnaisssance sur des mouvements humains en
+adaptant les modèles de comportement de t\^ache et en utilisant 
+des modèles de génération de mouvement humains.
+En effet, la méthode n'est pas 
+dépendante du comportement des t\^aches à retrouver.
+Deux points sont donc à vérifier, correspondant
+à la sélection de t\^aches d'une part (paragraphe~\ref{sec:alg2:proj}),
+et d'autre part l'annulation du mouvement provoqué par l'exécution
+d'une t\^ache (paragraphe~\ref{sec:alg2:nullification}).
+Dans le cadre de cette thèse, seul le premier point 
+a été validé en se plaçant dans le cas particulier du 
+mouvement d'atteinte, dont le modèle de comportement chez l'humain 
+est bien connu. 
+Il s'agit du modèle du minimum jerk qui sera utilisé pour caractériser 
+la trajectoire de l'effecteur atteignant sa cible.
+La généralisation à d'autres types de t\^aches
+ainsi que le second point
+sont laissés en perspectives.
+
+\subsection{Comportement d'une t\^ache d'atteinte par un humain}
+Nous nous focalisons sur  un type de t\^ache particulier:
+la t\^ache d'atteinte.
+En effet, des études ont mis en évidence le profil  
+de trajectoires humaines pour les mouvement d'atteinte.
+Celles-ci respectent un profil de type \emph{minimum jerk}~\cite{flash85}.
+\label{subsection:modelJerk}
+Cette connaissance de profil de trajectoire correspond
+bien à l'hypothèse requise pour l'application de notre méthode 
+de reconnaissance, qui est la connaissance d'un modèle de comportement
+lors de l'exécution d'une t\^ache.
+La trajectoire de la partie du corps d'un humain 
+effectuant ce mouvement d'atteinte suit un profil du type minimum jerk
+(de la même manière que dans la partie précédente, la trajectoire du robot
+correspondait à une décroissance exponentielle).
+La trajectoire en position reliant deux points $A$ et $B$ est dite
+de jerk minimum si elle correspond à l'optimum du problème:
+\begin{eqnarray}
+  \min \iiint_0^{\infty} \Vert \dddot{f}(t) \Vert dt \\
+  f(0) = A\\
+  f(\infty) = B
+  \label{eq:minJerkTraj}
+\end{eqnarray}
+
+\subsection{Modélisation du minimum jerk}
+Plutôt que de raisonner sur la forme implicite du problème~\eqref{eq:minJerkTraj},
+il est souvent choisi dans la littérature de représenter les trajectoires 
+en minimum jerk comme une classe spécique de polynômes du troisième ordre, 
+dont on sait que le jerk est faible.
+Nous choisissons de modéliser le jerk non pas comme un polynôme de degré 3,
+mais comme l'intégrale triple d'un signal à quatre créneaux correspondant respectivement
+aux phases d'accélération linéaires, de décélération, d'accélération et
+enfin d'accélération nulle. Ainsi notre modèle comportera 6 paramètres:
+les trois valeurs crêtes, et les trois instants relatifs de commutations.
+Ce choix est motivé par le fait que la méthode de reconnaissance utilise
+une méthode d'optimisation numérique pour la phase d'ajustement
+entre les trajectoires reconstruites (par observation) et le modèle de comportement.
+Utiliser les coefficients d'un polynôme comme paramètre 
+d'optimisations ne permet pas de restreindre l'espace de recherche
+aux courbes de type minimum jerk, et par conséquent,
+modéliser une t\^ache par un polynôme n'est pas efficace.
+Au contraire, la modélisation en signal créneaux
+permet d'assurer la minimalité de la fonction de jerk
+sans passer par des contraintes artificielles sur les 
+coefficients du ploynôme représentant la trajectoire.
+La trajectoire en position est
+alors obtenue par triple intégration du jerk.
+
+Le jerk est alors défini ainsi:
+\begin{equation}
+  \mathrm{jerk}(t) =
+  \left\{
+      \begin{array}{rll}
+        K_1& if& 0<t< \Delta t_1 \\
+        K_2& if& t_1<t< \Delta t_1 + \Delta t_2\\
+        K_3& if& t_2<t< \Delta t_1 + \Delta t_2 + \Delta t_3\\
+	0& if& t> \Delta t_1 + \Delta t_2 + \Delta t_3
+      \end{array}
+    \right.
+\label{jerk}
+\end{equation}
+La figure~\ref{fig:jerk} illustre notre modélisation par un exemple de minimum jerk, et 
+sa trajectoire en position correspondante.
+\begin{figure}[t]
+\begin{center}
+%\includegraphics[height=0.9\linewidth, angle = -90]{img/jerkTrajectory.ps}
+    \resizebox{0.4\textwidth}{!} {
+      \input{figures/chapitre5/jerkTrajectory.pstex_t}
+    }
+\end{center}
+\caption{Un exemple de minimum jerk et sa trajectoire en position correspondante.}
+\label{fig:jerk}
+\end{figure}
+
+Les mouvements considérés étant des trajectoires
+d'atteinte, le mouvement de la main se termine
+avec une position constante de celle-ci.
+Donc à $t = \Delta t_1 + \Delta t_2 + \Delta t_3$ la vitesse et l'accélération
+sont nulles. Ce qui amène à un système de deux équations
+avec comme inconnues $\Delta t_3$ et $K_3$, ce qui contraint la durée et le
+comportement de la phase finale pour atteindre une vitesse et accélération nulle. 
+%The problem is to make this trajectory continuous, so
+%that the optimization performance is not poor.
+%This is done by constraining the final relative time,
+%and the final jerk value~: the velocity and acceleration
+%at $t=t_1 + t_ 2+ t_3$ is null. It leads to a system of 2 equations
+%which will be solved over $K_3$ and $t_3$.\\
+Le problème d'optimisation pour l'ajustement de courbe devient:
+\begin{equation}
+\begin{array}{ll}
+  & \underset{\mbf{x}}\min \int \Vert \mbf{\hat{p}}(t) - \mbf{p}_\mbf{x}(t) \Vert ^2 + K_1^2 + K_2^2 \mathrm{dt}\\
+  \text{s.t.} & \mbf{p}_\mbf{x}(t) = \iiint \mathrm{jerk}(t) \mathrm{dt}
+\end{array}
+\label{minJerkOpti}
+\end{equation}
+\noindent où $\mbf{x}=[dt_1\ dt_2\ K_1\ K_2]$, $\mbf{\hat{p}}$ est la trajectoire mesurée.
+La seconde partie de la fonction de coût $K_1^2 + K_2^2$ est introduite
+pour limiter les paramètres $K_1$ et $K_2$,
+afin que les trajectoires obtenues par intégration du jerk soient 
+d'un ordre de grandeur raisonnable. Comme dans la section~\ref{sec:alg2:proj}, on utilise le solveur 
+FSQP avec une forme discrétisée de~\eqref{minJerkOpti}, la distance entre $\mbf{p}_\mbf{x}$ et $\mbf{\hat{p}}$.
+
+\subsection{Validation du modèle choisi}
+Dans cette expérimentation, nous validons 
+l'algorithme présenté dans le paragraphe~\ref{sec:alg2:proj}
+pour la détection de trajectoire d'atteinte chez l'humain.
+Un humain est équipé d'un ensemble de 23 marqueurs qui 
+vont permettre au système de capture de mouvement
+d'enregistrer des démonstrations.
+Le sujet doit atteindre le haut d'une bouteille en y posant son doigt, 
+tout en gardant un pied au sol et en gardant la position de la main secondaire
+constante. La position finale de la main
+est donc clairement définie et constante, et son orientation
+n'est pas contrainte. La bouteille
+est suffisamment éloignée du sujet pour l'obliger à lever un
+pied pour atteindre la bouteille. Lors de cette expérimentation, la trajectoire de la main
+qui atteint la bouteille est étudiée.
+La figure~\ref{fig:humanXP} illustre la position finale du mouvement.
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.6\linewidth]{figures/chapitre5/imgHuman.ps}
+\end{center}
+\caption{Position finale du mouvement d'atteinte humain.}
+\label{fig:humanXP}
+\end{figure}
+La trajectoire de la main dominante obtenue par capture de mouvement est donnée
+à un programme d'optimisation pour réaliser l'ajustement~\eqref{minJerkOpti} de la trajectoire observée
+sur notre modèle théorique~\eqref{jerk}.
+La figure~\ref{fig:minJerkFitting1}, montre que l'optimisation arrive 
+à faire correspondre la trajectoire observée au modèle proposé.
+\begin{figure}[t]
+\begin{center}
+%\includegraphics[height=0.9\linewidth, angle=-90]{img/FittingMinJerk.ps}
+\resizebox{.4\textwidth}{!} {
+      \input{figures/chapitre5/FittingMinJerk.pstex_t}
+    }
+\end{center}
+\caption{Ajustement du modèle de minimum jerk sur une trajectoire d'atteinte réelle.}
+\label{fig:minJerkFitting1}
+\end{figure}
+
+%\subsection{Conclusion et futures expérimentations}
+
+\subsection{Analogie avec la pile de t\^aches}
+L'hypothèse des \emph{variétés non contrôlées}
+définit une séparation entre les espaces contrôlés et les espaces non-contrôlés~\cite{scholz99}.
+Ainsi une grande variabilité dans l'espace non-contrôlé (\emph{UCM}) ne 
+va pas dégrader les performances d'une t\^ache,
+tandis qu'une grande variabilité dans son sous-espace orthogonal va
+dégrader ces performances.
+
+Dans le cas particulier des t\^aches d'atteintes considérées
+dans les différentes expérimentations menées dans~\cite{jacquierbret09},
+la présence de contraintes géométriques matérialisées 
+par un obstacle entraîne une grande variabilité au niveau
+de l'espace non-contrôlé du coude: pour éviter l'obstacle,
+un humain va modifier la trajectoire du coude.
+Une approximation de cet espace non-contrôlé est réalisée en utilisant le noyau 
+de la jacobienne. Ainsi, cet espace 
+représente l'espace nul de la t\^ache d'atteinte.
+Les expérimentations menées dans ces travaux
+montrent qu'il
+est cohérent d'utiliser les mécanismes liés à la redondance,
+bien connus dans le cas robotique, pour expliquer
+la gestion de la redondance dans les mouvements humains.

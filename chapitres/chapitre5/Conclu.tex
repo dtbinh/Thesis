@@ -1,0 +1,81 @@
+\section*{Conclusion}
+Ce chapitre a présenté une méthode pour identifier quelles t\^aches sont
+impliquées dans un mouvement observé, sans utiliser d'informations contextuelles:
+seule la trajectoire observée est analysée.
+L'analyse est conduite par la connaissance du comportement
+d'un robot lors de l'exécution d'une t\^ache (par exemple, une décroissance
+exponentielle).
+Le mouvement analysé est supposé \^etre généré par un ensemble
+de contr\^oleurs appartenant à un lot de t\^aches connu.
+Le problème de la reconnaissance de t\^aches est traité en procédant par une rétro-ingénierie
+du mouvement.
+La trajectoire observée est analysée dans chaque espace de t\^aches connu pour décider
+quelles t\^aches sont actives en comparant ces trajectoires aux comportements théoriques attendu.
+La méthode est généralisable sur les comportements d'une t\^ache, et par conséquent,
+n'importe quelle loi de commande utilisée pour générer un mouvement 
+peut \^etre utilisée dans cette méthode pour caractériser une t\^ache.
+
+La méthode a été appliquée avec succès dans différent scénarios pour discriminer des mouvements
+visuellement proches, en simulation (paragraphe~\ref{sec:simu}) et sur un véritable 
+robot HRP-2 (paragraphe~\ref{sec:real}).
+Ces mouvements ont été construits spécialement pour présenter des ambiguïtés, dans le but
+d'illustrer l'efficacité de la méthode proposée.\\
+
+Dans toutes ces expériences, une hypothèse forte considérée était que le mouvement
+analysé ne doit pas comporter de t\^aches qui changent d'état (active, non-active).
+Une solution intéressante à explorer serait d'ajouter une dimension temporelle
+à la reconnaissance de t\^ache: il s'agirait de déterminer la durée de validité
+d'une pile de t\^aches, ainsi un mouvement serait segmenté temporellement
+en succession d'instances de piles de t\^aches comme montré dans la Fig.~\ref{fig:trajSegmentation}.
+La segmentation temporelle s'effectuera en
+introduisant les temps de début et de fin de t\^aches dans les paramètres d'optimisation.
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.6\linewidth]{figures/chapitre5/trajSegmentation2.ps}
+\end{center}
+\caption{Segmentation temporelle d'une trajectoire en séquence de piles de t\^aches.}
+\label{fig:trajSegmentation}
+\end{figure}
+
+Dans l'expérience de le paragraphe~\ref{chap:xpHumain},
+un modèle de t\^ache adapté aux mouvements humain pour des t\^aches d'atteintes est vérifié.
+Par extension, il serait ainsi possible d'appliquer
+notre méthode de reconnaissance de t\^aches pour ce type de mouvement.
+Le problème étant que les mouvements humains sont beaucoup plus complexes à décrire
+que les mouvements des robots. 
+Les étapes futures s'attacheront à trouver dans la littérature du domaine
+des modèles pour d'autres t\^aches que le mouvement d'atteinte. D'autre part,
+pour les mouvements d'atteinte, nous chercherons à valider le modèle du minimum jerk
+comme étant un critère discriminant (c'est-à-dire dans le cas du scénario 2.a,
+si la main gauche ne suit pas une telle loi).
+Une solution pour généraliser à des modèles de t\^aches divers serait 
+de s'appuyer sur des méthodes d'apprentissage. On pourrait ainsi extraire
+un modèle à partir d'une série de mouvement, par exemple en s'appuyant sur
+des processus gaussien. L'utilisation de ces techniques ont montrées
+des résultats prometteurs dans le domaine des mouvements humains~\cite{wang08a}.
+Les travaux présentés dans~\cite{alvarez09} illustrent une approche hybride
+de modélisation de mouvement par apprentissage et modèle physique:
+les données de haute dimension représentant des mouvements humains
+sont résumé par des variables latentes ayant une interprétation physique.
+Le modèle serait ensuite re-utilisé en projetant le mouvement
+observé dans l'espace de la variable apprise. La distance 
+au modèle appris serait alors utilisée comme une mesure
+d'activation de la t\^ache.
+
+Dans notre méthode de reconnaissance,
+l'étape des annulations des t\^aches par projections dans les espaces nuls
+est primordiale. Outre le fait d'étudier la
+validité du modèle de minimum jerk pour caractériser l'exécution
+ou la non-exécution d'une t\^ache, une des voies à explorer est d'étudier si 
+un modèle cinématique approché d'un humain, pour calculer les projections, peut être suffisant
+pour pouvoir déterminer si toute les t\^aches ont été détectées.
+L'utilisation d'un modèle plus réaliste et complet,
+tel un modèle de génération de mouvement dynamique~\cite{saab11},
+pourra être étudié. En effet, en considérant un modèle dynamique,
+les inerties des corps seront prises en compte dans le mécanisme de projection.
+Enfin, la validité de la pile de t\^aches
+sera étudier pour des mouvements humain, c'est-à-dire caractériser si
+les mécanismes de fusion d'objectifs multiples (ou comment est gérée la redondance) 
+chez l'humain peut \^etre représenter sous une forme de pile de t\^aches.
+

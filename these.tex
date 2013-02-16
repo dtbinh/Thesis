@@ -1,0 +1,188 @@
+%\documentclass[12pt,draft]{article}
+\documentclass[10pt]{book}
+%% En 12pt c'est possible aussi
+
+%-----------------------------------------------------------------------------%
+% New command 								      %
+% ----------------------------------------------------------------------------%
+%\newcommand{\TODO}[1]{\textcolor{red}{\begin{Large}{#1}\end{Large}}} 
+\newcommand{\TODO}[1]{ \textcolor{red}{ \textbf{ #1 } } } 
+
+
+% ---------------------------------------------------------------------------- %
+% --- PACKAGE ---------------------------------------------------------------- %
+% ---------------------------------------------------------------------------- %
+\input{misc/packages.tex}
+\input{misc/commands.tex}
+\input{misc/cldMacro.sty}
+
+\usepackage{these}
+\usepackage{color}
+\usepackage{multicol}
+\usepackage{amsmath}
+
+\newcites{sec}{Publications}
+
+%% 2= subsection, 3=subsubsection
+\setcounter{secnumdepth}{3}  %% Avec un numero.
+\setcounter{tocdepth}{2}     %% Visibles dans la table des matieres
+
+\definecolor{orange}{rgb}{0.99,0.69,0.07}
+\definecolor{lightgray}{gray}{0.85}
+
+% ---------------------------------------------------------------------------- %
+% --- ENTETE ----------------------------------------------------------------- %
+% ---------------------------------------------------------------------------- %
+\begin{document}
+\include{chapitres/couverture}
+~\thispagestyle{empty}%\newpage
+\include{chapitres/remerciements}
+\thispagestyle{empty}\newpage
+\thispagestyle{empty}\newpage
+
+\input{chapitres/publi.tex}
+\bibliographystylesec{plain}
+\bibliographysec{misc/bibfr}
+\thispagestyle{empty}\newpage
+\thispagestyle{empty}
+%---------------------------------------------------------------------------- %
+%--- INDEX ------------------------------------------------------------------ %
+%---------------------------------------------------------------------------- %
+~\newpage
+\setcounter{page}{1}
+%~\newpage
+\addcontentsline{toc}{chapter}{Table des mati\`eres}
+\markboth{Table des mati\`eres}{Table des mati\`eres}
+ 
+\tableofcontents 
+
+% ---------------------------------------------------------------------------- %
+% --- CHAPITRES -------------------------------------------------------------- %
+% ---------------------------------------------------------------------------- %
+\pagestyle{empty}
+ \input{chapitres/notations}
+~\newpage
+ \chapter{Introduction}
+  %\input{chapitres/introGenerale}
+\pagestyle{plain} 
+ \input{chapitres/chapitre1/Intro}
+
+ \input{chapitres/chapitre2/Intro}
+ \input{chapitres/chapitre2/eda}
+ \input{chapitres/chapitre2/problematique} 
+
+ \input{chapitres/chapitre3/Intro}
+ \input{chapitres/chapitre3/Redondance}
+ \input{chapitres/chapitre3/Application}
+ \input{chapitres/chapitre3/Conclu}
+
+ \input{chapitres/chapitre4/Intro}
+ \input{chapitres/chapitre4/Methode}
+ \input{chapitres/chapitre4/AttenteActive}
+ \input{chapitres/chapitre4/Conclu}
+
+ \input{chapitres/chapitre5/Intro}
+ \input{chapitres/chapitre5/Methode}
+ \input{chapitres/chapitre5/xpRobot}
+ \input{chapitres/chapitre5/xpHumain}
+ \input{chapitres/chapitre5/Conclu}
+
+ %\input{chapitres/chapitre6/Intro}
+ %\input{chapitres/chapitre6/SotDyn}
+ %\input{chapitres/chapitre6/ImitDyn}
+ %\input{chapitres/chapitre6/Reco}
+ %\input{chapitres/chapitre6/Conclu}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\addcontentsline{toc}{chapter}{\protect\numberline{}Conclusion et perspectives}
+ \chapter*{Conclusion et perspectives}
+ \input{chapitres/concluGenerale}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+
+
+%---------------------------------------------------------------------------- %
+%--- ANNEXES\underline{} ---------------------------------------------------------------- %
+%---------------------------------------------------------------------------- %
+%---------------------------------------------------------------------------- %
+ %\appendix   
+ %\chapter{Preuves}
+ %\input{chapitres/annexes/annexe_preuveOrdre}
+ %\label{annexe:preuve}
+
+
+% % ---------------------------------------------------------------------------- %
+% % --- BIBLIO ----------------------------------------------------------------- %
+% % ---------------------------------------------------------------------------- %
+% 
+%\renewcommand\bibname{Foo}
+\bibliographystyle{apalike-fr}
+\bibliography{misc/bibfr}
+
+
+% 
+% % ---------------------------------------------------------------------------- %
+% % --- TABLES ----------------------------------------------------------------- %
+% % ---------------------------------------------------------------------------- %
+% 
+% % --->
+% % ---> TABLE DES MATIERES
+% % --->
+% %\newpage
+% %\cleardoublepage
+% %\addcontentsline{toc}{chapter}{Table des matiï¿½es}
+% %\markboth{Table des matiï¿½es}{Table des matiï¿½es}
+% %\sommaire[2]
+% %\shorttableofcontents{Table des matiï¿½es}{2}
+% %\tableofcontents{Table des matiï¿½es}
+% %
+% % --->
+% % ---> TABLE DES FIGURES
+% % --->
+  \newpage
+  \cleardoublepage
+  \addcontentsline{toc}{chapter}{Table des figures}
+  \markboth{Table des figures}{Table des figures}
+  \listoffigures
+ %%
+% % --->
+% % ---> TABLE DES ALGOS
+% % --->
+% %%\newpage
+% %%\cleardoublepage
+% %%\addcontentsline{toc}{chapter}{Liste des algorithmes}
+% %%\markboth{Liste des algorithmes}{Liste des algorithmes}
+% %%\listofalgorithms
+% %%
+% 
+% % ---> ???
+% %\newpage
+% %\cleardoublepage
+% %\addcontentsline{toc}{chapter}{Index}
+% %\markbo
+% 
+%  
+% 
+% 
+% 
+% 
+% 
+% %\printindex
+% 
+% % ---------------------------------------------------------------------------- %
+% % --- ABSTRACT --------------------------------------------------------------- %
+% % ---------------------------------------------------------------------------- %
+% 
+% %\commentaire{%-------------------- debut commentaire -------------------
+% %% Il faut mettre le resume sur la quatriï¿½e de couverture. 
+% %% Suivant que votre liste de figures comporte un nombre pair 
+% %% ou impair de pages il faudra mettre un nombre pair ou impair
+% %% de commandes \newpage.
+\alignquatriemedecouv
+\include{chapitres/resume}
+
+
+\end{document}
+
+
+%<!-- Local IspellDict: francais -->

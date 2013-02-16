@@ -1,0 +1,251 @@
+%\chapter{Introduction}
+%Le d\'eveloppement de la robotique de service stimule la recherche
+%dans l'int\'eraction homme-robot. Dans ce contexte, la compr\'ehension
+%des actions du robot et de l'être humain \`a partir d'une observation est un d\'efi.
+%Bien que les actions volontaires apparaissent au niveau de la planification,
+%leurs r\'ealisations s'effectuent dans le monde r\'eel par le biais 
+%des mouvements. Comment reconna\^itre une action \`a partir
+%d'un mouvement observ\'e? D\'efinir une m\'ethode pour reconna\^itre automatiquement
+%l'objectif vis\'e par un robot ex\'ecutant un mouvement donn\'e est un probl\`eme 
+%crucial. Les robots manipulateurs mobiles,
+%sont construits de façon \`a \'etablir une s\'eparation claire entre les fonctions de navigation et 
+%les fonctions de manipulation. Par exemple, le robot PR2 (voir Fig.~\ref{fig:pr2})
+%possède des bras uniquement dédié à la manipulation
+%et une base mobile uniquement dédié à la navigation. Par cons\'equent, la question de la reconnaissance
+%d'actions peut \^etre simple. De ce point de vue, un robot humano\"ide
+%peut aussi \^etre divis\'e en deux parties distinctives: les jambes
+%et le haut du corps, qui correspondraient aux fonctions de navigation
+%et aux fonctions de manipulation.
+
+%\begin{figure}[t]
+%  \begin{center}
+%    \includegraphics[width=0.4\linewidth]{figures/chapitre5/pr2.ps}
+%  \end{center}
+%  \caption{Le robot PR2 est construit de façon à séparer les fonctions de navigation
+%  et les fonctions de manipulation.}
+%  \label{fig:pr2}
+%\end{figure}
+
+%\subsection{Problem statement: disambiguating motions in embodied actions.}
+%\begin{figure*}[t]
+%  \centering
+%  \makeatletter
+%  \renewcommand{\@thesubfigure}{Scenario \thesubfigure:\hskip\subfiglabelskip}
+%  \makeatother
+
+%  \subfigure[La t\^ache globale \emph{Donne moi la balle} est d\'ecompos\'e en
+%  s\'equences de sous-t\^aches \lbrack localiser la balle\rbrack, \lbrack marcher vers la balle\rbrack, 
+%  \lbrack attraper la balle\rbrack, \lbrack localiser l'op\'erateur\rbrack, \lbrack marcher vers l'op\'erateur\rbrack, 
+%  et \lbrack donner la balle\rbrack. Les mouvements \lbrack marcher vers\rbrack, \lbrack attraper\rbrack, 
+%  \lbrack donner\rbrack~apparaissent comme une s\'equence structurant l'action (extrait de~\cite{yoshida07}).]{
+%  \makebox[\linewidth]{
+%  \begin{tabular}{c@{}c@{}c@{}c@{}c@{}}
+%    \includegraphics[height=2.4cm]{figures/chapitre5/purpleBall1.ps}&
+%    \includegraphics[height=2.4cm]{figures/chapitre5/purpleBall2.ps}&
+%    \includegraphics[height=2.4cm]{figures/chapitre5/purpleBall3.ps}&
+%    \includegraphics[height=2.4cm]{figures/chapitre5/purpleBall4.ps}&
+%    \includegraphics[height=2.4cm]{figures/chapitre5/purpleBall5.ps}\\
+%  \end{tabular}
+%  \label{fig:introExample:purpleBall}
+%  }
+%  }
+%  \subfigure[Pour attraper la balle situ\'ee entre ses pieds, le robot doit s'en \'eloigner en faisant quelques pas
+%  en arri\`ere. Dans cette exp\'erience, la partie \emph{reculer} n'est pas g\'er\'e par un module de logiciel.
+%  Elle fait partie int\'egrale de l'action complexe \emph{attraper} (extrait de~\cite{kanoun10}).]{
+%  \makebox[\linewidth]{
+%  \begin{tabular}{c@{}c@{}}
+%    \includegraphics[height=1.7cm]{figures/chapitre5/graspFeet1.ps}&
+%    \includegraphics[height=1.7cm]{figures/chapitre5/graspFeet2.ps}\\
+%  \end{tabular}
+%  \label{fig:introExample:graspFeet}
+%  }
+%  }
+%  \subfigure[Pour attraper la balle en face de lui (\`a gauche), le robot
+%  atteint une posture dans laquelle le bras gauche est utilis\'e pour garder son \'equilibre. 
+%  Dans la figure de droite, le robot effectue deux actions en parall\`ele:
+%  attraper la balle devant lui tout en attrapant une autre balle se trouvant derri\`ere lui 
+%  (bien sûr, la balle qui se trouve derri\`ere le robot a \'et\'e volontairement plac\'e \`a la position 
+%  finale de la main gauche illustré dans la figure de gauche). Il est 
+%  impossible de diff\'erencier visuellement les deux postures. Cependant,
+%  est-il possible de discriminer ces deux mouvements?]{
+%  \makebox[\linewidth]{
+%  \includegraphics[height=2.4cm]{figures/chapitre5/spotDiff1H.ps}
+%  }
+%  \label{fig:introExample:spotDiff}
+%  }
+%  \caption{Exemple d'introduction d'actions complexes.}
+%  \label{fig:introExample}
+%\end{figure*}
+%Cette séparation est illustrée par exemple dans le sc\'enario \emph{Donne moi la balle rose}~\cite{yoshida07},
+%effectu\'e par le robot humano\"ide HRP-2 au LAAS-CNRS (Fig.~\ref{fig:introExample:purpleBall}). 
+%Pour atteindre son objectif, le robot HRP-2 d\'ecompose sa mission en sous-t\^aches \'el\'ementaires,
+%chaque mission est prise en charge par un module logiciel d\'edi\'e. 
+%Pour atteindre la balle, le robot doit marcher vers celle-ci.
+%\emph{Marcher} s'apparente \`a une action \'el\'ementaire qui est n\'ecessaire dans la 
+%r\'esolution du probl\`eme initial (\emph{Donne moi la balle rose}).
+%elle est prise en charge par un module de locomotion d\'edi\'e.
+%
+%Cependant, dans le second sc\'enario (Fig.~\ref{fig:introExample:graspFeet}),
+%le HRP-2 doit attraper la balle situ\'e entre ses pieds~\cite{kanoun10}. Pour atteindre
+%cet objectif, le robot doit faire quelques pas en arri\`ere avant d'attraper la balle. Dans
+%cette exp\'erience, il n'y a pas de module d\'edi\'e \`a la marche. L'action \emph{reculer}, est une
+%cons\'equence directe de l'action \emph{attraper}. Cette action est int\'egr\'ee au mouvement 
+%du corps, par exemple les jambes contribuent naturellement \`a la r\'ealisation de l'action
+%via une g\'en\'eration d'un mouvement complexe. Enfin, la Fig.~\ref{fig:introExample:spotDiff}
+%introduit le but de ce chapitre. Dans le cas illustr\'e dans la figure de gauche, le robot
+%effectue un mouvement de simple prise (une seule main). Dans le cas illustr\'e dans la figure de 
+%droite, le robot effectue deux prises en parall\`ele. L'ambig\"uit\'e de ces mouvements provient
+%du r\^ole jou\'e par la main gauche. Dans le premier cas, la main gauche contribue
+%\`a la t\^ache de saisie en compensant le d\'es\'equilibre introduit par le d\'eplacement
+%de la main droite. Dans le second cas, le bras gauche bouge pour saisir une autre balle. 
+%Dans les deux cas, les mouvements sont visuellement proches.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Le développement de la robotique de service est étroitement liée
+à une grande variété de problèmes scientifiques. L'objectif d'une grande partie de ce domaine
+de recherche est que l'intégration des robots dans l'environnement 
+humain soit suffisamment fiable et efficace pour être utile.
+Les exemples de problèmes à 
+résoudre concernent la navigation et la perception de l'environnement.
+C'est cette classe de problème qui a été tout d'abord résolue et des solutions ont été appliquées avec succès 
+sous l'incarnation de robots aspirateurs, nettoyeurs de piscines ou 
+robots explorateurs.
+
+À ces fonctionnalités de navigations, des fonctionnalités
+de manipulations peuvent être ajoutées.
+Les robots mobiles manipulateurs tels 
+que le PR2~\cite{PR2} sont équipés de bras 
+destinés aux actions de manipulations d'objets situés dans l'environnement
+(voir figure~\ref{fig:pr2}).
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.3\linewidth]{figures/chapitre5/pr2.ps}
+  \end{center}
+  \caption{Le robot PR2 de Willow garage.}
+  \label{fig:pr2}
+\end{figure}
+Ces robots sont construits de manière à découpler les fonctionnalités de navigation
+et de manipulation, il est ainsi
+possible d'associer directement des espaces aux t\^aches à effectuer.
+Par exemple, pour la navigation, les roues du robot vont évoluer dans l'espace défini par le plan
+du sol. Tandis que pour la manipulation, les actions du bras vont être exprimées
+dans l'espace cartésien pour asservir la position de l'effecteur à une position désirée.
+Les deux domaines des actions sont bien découplés, et des opérations de 
+programmation, debuggage, diagnostique et reconnaissance peuvent alors être traitées facilement en effectuant
+des observations dans ces deux espaces.
+
+La même séparation de fonctionnalités peut aussi s'appliquer
+aux robots humanoïdes en considérant que les jambes 
+remplissent la fonction de navigation et que le haut du corps
+s'occupe de la manipulation. La navigation se traduit
+alors par une planification d'empreintes de pas que le robot doit suivre dans l'espace à deux
+dimensions représentant le sol pour atteindre un objectif. À la manière des robots manipulateurs,
+les actions de manipulation seront exprimées dans l'espace cartésien.
+Cette approche est illustrée dans le scénario \emph{Donne moi la balle rose}~\cite{yoshida07},
+effectué par le robot humanoïde HRP-2 au LAAS-CNRS.
+La mission du robot est décomposée en sous-missions qui sont gérées par des modules de logiciels
+indépendants: localiser la balle, marcher vers la balle, attraper la balle,
+localiser l'opérateur, marcher vers l'opérateur et donner la balle (voir la figure~\ref{fig:purpleBall}).
+\begin{figure}[t]
+  \centering
+  %\begin{tabular}{c@{}c@{}c@{}c@{}c@{}}
+  \subfigure{
+  \includegraphics[width=0.3\linewidth]{figures/chapitre5/purpleBall1.ps}
+  }
+  \subfigure{
+  \includegraphics[width=0.3\linewidth]{figures/chapitre5/purpleBall2.ps}
+  }
+  \subfigure{
+  \includegraphics[width=0.3\linewidth]{figures/chapitre5/purpleBall3.ps}
+  }
+  \subfigure{
+  \includegraphics[width=0.3\linewidth]{figures/chapitre5/purpleBall4.ps}
+  }
+  \subfigure{
+  \includegraphics[width=0.3\linewidth]{figures/chapitre5/purpleBall5.ps}
+  }
+  %\end{tabular}
+  \caption[\emph{Donne moi la balle}.]{La mission globale \lbrack Donne moi la balle\rbrack est décomposée en
+  séquences de sous-missions \lbrack localiser la balle\rbrack, \lbrack marcher vers la balle\rbrack, 
+  \lbrack attraper la balle\rbrack, \lbrack localiser l'opérateur\rbrack, \lbrack marcher vers l'opérateur\rbrack, 
+  et \lbrack donner la balle\rbrack. Les mouvements \lbrack marcher vers\rbrack, \lbrack attraper\rbrack, 
+  \lbrack donner\rbrack~apparaissent comme une séquence structurant l'action (extrait de~\cite{yoshida07}).}
+  \label{fig:purpleBall}
+\end{figure}
+
+D'une manière générale, le découpage en sous parties fonctionnelles n'est pas toujours
+possible à cause de la complexité du robot. C'est le cas par exemple
+d'un robot humanoïde où des couplages entre les différents
+membre, qui varient en fonction de l'action à réaliser, sont trop nombreux.
+Le scénario illustré par la figure~\ref{fig:graspFeet} ressemble beaucoup
+au scénario précédent cependant, la méthodologie appliquée pour accomplir la mission est très différente.
+Ici, la mission du robot est d'attraper une balle se situant entre ses pieds. Pour
+accomplir la mission, le robot doit reculer puis tendre la main vers la balle.
+La mission est accomplie en considérant que les pas à effectuer
+représentent une extension virtuelle du robot, ramenant la mission à un
+problème de cinématique inverse avec contraintes~\cite{kanoun10}.
+La marche apparaît alors de façon implicite dans 
+l'action \emph{asservir la position de la main vers la position de la balle} qui décrit la mission. 
+\begin{figure}
+  \centering
+  \subfigure{
+  \includegraphics[width=0.90\linewidth]{figures/chapitre5/graspFeet1.ps}
+    }
+  \subfigure{
+    \includegraphics[width=0.90\linewidth]{figures/chapitre5/graspFeet2.ps}
+    }
+  \caption[Planification de pas formulé en problème de cinématique inverse.]{Pour attraper la balle située entre ses pieds, le robot doit s'en éloigner en faisant quelques pas
+  en arrière. Dans cette expérience, la partie \emph{reculer} n'est pas gérée par un module de logiciel.
+  Elle fait partie intégrale de l'action complexe \emph{attraper la balle} (extrait de~\cite{kanoun10}).}
+  \label{fig:graspFeet}
+\end{figure}
+
+\section{Problématique}
+Dans ce manuscrit, nous cherchons à reconnaître les composantes
+du mouvement en cours lorsque le découpage fonctionnel n'est pas possible.
+Nous nous intéressons plus particulièrement aux mouvements faisant intervenir
+plusieurs objectifs à atteindre.
+Dans ce cadre, nous cherchons à montrer que la fonction de t\^aches,
+classiquement utilisée pour décrire un mouvement à générer, peut
+être utilisée comme une généralisation du découpage fonctionnel, 
+pour reconnaître de manière explicite des parties couplées du mouvement.
+
+La figure~\ref{fig:spotDiff} illustre la problématique des travaux présentés dans ce manuscrit.
+Dans l'image de gauche, le robot effectue un mouvement d'atteinte avec sa main droite.
+Dans l'image de droite, le robot effectue deux mouvements d'atteintes en parallèle.
+Les deux mouvements sont visuellement très proches. Pourtant le rôle
+de la main gauche est discriminant. Dans le premier cas, la main gauche 
+est couplée au mouvement de la main droite pour compenser
+le déséquilibre introduit par le déplacement de la main droite.
+Dans le second cas, la main gauche agit de manière indépendante pour accomplir l'action
+d'atteinte. Le problème soulevé est donc de trouver le moyen
+de différencier les deux mouvements en les observant. Nous montrons
+qu'en effectuant les observations dans les \emph{bons} espaces,
+il est possible d'effectuer une reconnaissance 
+de mouvements capable de désambiguïser ces mouvements visuellement proches.
+\begin{figure}
+  \centering
+  \subfigure{
+  \includegraphics[trim=220px 10px 220px 0px, width=0.48\linewidth, clip=true]{figures/chapitre1/Lonly.ps}
+  }
+  \subfigure{
+  \includegraphics[trim=220px 10px 220px 0px, width=0.48\linewidth, clip=true]{figures/chapitre1/RL.ps}
+  }
+  \caption[Comment désambiguïser des mouvements proches?]{Pour attraper la balle en face de lui (\`a gauche), le robot
+  atteint une posture dans laquelle le bras gauche est utilisé pour garder son équilibre. 
+  Dans la figure de droite, le robot effectue deux actions en parallèle:
+  attraper la balle devant lui tout en attrapant une autre balle se trouvant derrière lui 
+  (bien sûr, la balle qui se trouve derrière le robot a été volontairement placée à la position 
+  finale de la main gauche illustrée dans la figure de gauche). Il est 
+  impossible de différencier visuellement les deux postures. Cependant,
+  est-il possible de discriminer ces deux mouvements?}
+  \label{fig:spotDiff}
+\end{figure}
+
+Dans la suite de cette section, nous présentons différentes
+approches considérées dans le domaine de l'imitation et la reproduction
+de mouvements. Les travaux en imitation de mouvements sont 
+reliés aux nôtres dans la mesure où le problème de l'imitation 
+consiste à détecter les caractéristiques importantes ou communes d'un ou
+plusieurs mouvements observés afin de pouvoir les reproduire ou les généraliser.
+

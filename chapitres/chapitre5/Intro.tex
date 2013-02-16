@@ -1,0 +1,245 @@
+%\section*{Introduction}
+%\label{sec:intro}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\chapter{Reconnaissance de t\^ache en robotique par commande inverse}
+\label{chap:reco}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+Nous présentons dans ce chapitre une méthode de reconnaissance de t\^aches
+particulièrement adaptée à la reconnaissance de t\^aches exécutées en parallèle.
+%Ce chapitre pr\'esente une m\'ethode exploitant les 
+%outils du formalisme de la fonction de t\^ache pour
+%effectuer de la reconnaissance de t\^ache. La m\'ethode
+%repose sur une analyse du mouvement semblable \`a de
+%la r\'etro-ing\'enierie.
+%
+L'originalité de la méthode présentée ici est d'utiliser les propriétés de la fonction de t\^aches,
+classiquement utilisée pour la génération de mouvements,
+pour effectuer la reconnaissance de t\^aches. L'idée principale est d'effectuer
+une rétro-ingénierie sur un mouvement observé, connaissant l'ensemble 
+des t\^aches qui peuvent appara\^itre dans ce mouvement et en utilisant les 
+trajectoires engendrées par les lois de commandes dans 
+les espaces de t\^aches comme étant des trajectoires caractéristiques.
+Sous l'hypothèse que le mouvement a été généré en empilant un ensemble
+de contrôleurs, le mouvement est traité afin de rechercher les comportements
+connus dans chaque espace des t\^aches.
+Nous appelons cette approche de rétro-ingénierie la \emph{commande inverse}.
+Alors que toutes les approches présentées dans le paragraphe suivant ne peuvent reconnaitre que
+des t\^aches non parallèles, nous nous appuyons sur les principes de la redondance
+en contrôle pour reconnaitre des ensembles de t\^aches parallèles.
+Lors de la phase de reconnaissance, le mouvement est projeté dans 
+des espaces orthogonaux aux espaces des t\^aches déjà détectées.
+Cela assure un découplage efficace des t\^aches effectuées par le robot.
+
+Nous avons introduit dans le chapitre~\ref{chap:sot} les fondements sur lesquels 
+les travaux présentés s'appuient : le formalisme de la fonction de t\^aches.
+L'algorithme proposé pour effectuer l'analyse de mouvement est présenté dans les
+paragraphes suivants.
+Enfin, des expérimentations validant la méthode sont présentées en simulation
+et sur le robot HRP-2.
+
+\section{Etat de l'art}
+La reconnaissance de t\^aches est un probl\`eme qui est apparu assez
+t\^ot en robotique. Dans la communaut\'e de la vision, ce probl\`eme
+est g\'en\'eralement consid\'er\'e pour les mouvements non-structur\'es:
+aucune hypoth\`eses ne sont faites, que ce soit sur la forme ou la rigidit\'e
+des corps qui bougent.
+
+Cependant, les informations sont issues de l'environnement et la reconnaissance
+est principalement faite \`a partir du contexte, par exemple, les points
+saillants en temps et en position (le flux de vid\'eo 2D est considéré comme 
+étant une fonction 3D)~\cite{laptev05}. Ces points sont appris d'une base de donn\'ees,
+puis associ\'es pendant une d\'emonstration. L'environnement est aussi
+utilis\'e pour effectuer une extraction d'arri\`ere plan pour 
+d\'egager une silhouette et effectuer, par exemple, une reconnaissance 
+de d\'emarche~\cite{liu05}.
+
+La structure du corps poly-articul\'e est souvent suppos\'ee connue et est
+utilis\'ee pour estimer sa pose. Par exemple l'estimation d'une
+trajectoire de posture d'un humano\"ide dans~\cite{zordan03} est ex\'ecut\'ee
+en utilisant des donn\'ees issues d'un syst\`eme de capture de mouvements pour 
+guider un mod\`ele physique connu.
+Dans le reste de ce chapitre, nous consid\'erons que le modèle cinématique du corps poly-articul\'e
+est connu.
+
+%In the quest of robot autonomy, research and development in Robotics is
+%dominated by the stimulating competition between abstract symbol manipulation and physical signal
+%processing, between discrete data structures and continuous variables.
+%Indeed finding a proper way to relate the discrete space of symbols and the continuous space
+%of controllers is a challenge.\\
+%%%
+Les outils statistiques ont \'et\'e appliqu\'es avec succ\`es \`a la 
+reconnaissance d'actions et \`a l'analyse de mouvements~\cite{schaal03}.
+Ces outils sont utilis\'es pour cr\'eer des symboles, et par extension,
+les d\'etecter dans un mouvement.
+Par exemple, une m\'ethode pour le contr\^ole bas\'e comportement est 
+pr\'esentée dans~\cite{drumwright03, drumwright04}. 
+Les comportements sont d\'efinis comme \'etant des symboles de mouvements
+(par exemple un direct, un crochet, un uppercut, une garde).
+Les comportements sont mod\'elis\'es par apprentissage \`a partir d'une 
+s\'erie d'exemples.
+Une r\'eduction de dimension est alors appliqu\'ee pour avoir une classification
+significative. La reconnaissance est g\'er\'ee par
+un classifieur bayésien qui reconnait une trajectoire
+dans l'espace articulaire ou l'espace cart\'esien. 
+L'imitation est une extension de la reconnaissance.
+Elle est effectuée en interpolant des exemples connus pour obtenir
+des trajectoires réalisables.
+L'introduction des processus de décision markoviens partiellement observables 
+(partially observable Markov decision process, POMDP) ou des inférences bayésiennes~\cite{pearl88} 
+ont relancé le domaine de la modelisation d'action~\cite{kaelbling98} ces dernières années. 
+De telles techniques sont appliquées à l'apprentissage de primitives motrices~\cite{peters08} 
+et à la segmentation de mouvements~\cite{calinon10, inamura04}. 
+Les modèles de Markov cachés (HMMs) ont été largement utilisés dans des travaux antérieurs,
+par exemple, pour exécuter une reconnaissance d'action ou de démarche~\cite{gu10}
+ou pour générer des mouvements proches du mouvement humain~\cite{kwon08}. 
+Dans ces travaux, des données issues de captures de mouvements humain sont utilisées
+pour construire une base dans l'espace articulaire pour chaque classe de mouvement
+en utilisant une technique de réduction de dimension.
+En parallèle, des HMMs sont entrainés pour capturer les caractéristiques relatives
+à la classe de mouvement dans l'espace des t\^aches.
+La génération est obtenue en trouvant la combinaison linéaire optimale des éléments 
+de la base qui va maximiser la probabilité du HMM entrainé.
+Bien que l'espace des t\^aches soit considéré comme étant un espace où les caractéristiques
+doivent être extraites, la méthode est limitée à un espace de t\^ache spécifique par mouvement
+généré.
+Dans~\cite{liang09} des modèles de Markov à tailles variable sont utilisés
+pour apprendre des actions atomiques d'humain. Une séquence d'actions atomiques représente
+un comportement complet.
+D'une manière générale, l'efficacité des techniques de reconnaissance basé sur les outils 
+statistiques est dépendante de la qualité de la base de données construite lors de la phase 
+d'apprentissage.
+Plusieurs démonstrations pour chaque cas particulier sont nécessaire afin
+d'extraire les invariants qui vont discriminer les t\^aches.
+La couverture des données d'apprentissage peut aussi limiter l'efficacité de la reconnaissance.
+Enfin, l'ensemble des démonstrations doivent être associées
+aux bons symboles, ce qui est généralement donné à l'algorithme
+d'apprentissage.
+
+D'une autre façon, la reconnaissance peut se baser sur des critères spécifiques qui
+sont des a priori donnés au système.
+Dans~\cite{nakaoka07}, seules les trajectoires du robot sont utilisées pour
+distinguer les différentes phases de mouvement. Dans ces travaux là, une t\^ache
+est un mouvement corps complet du robot durant un segment temporel.
+Le mouvement global est une séquence de t\^aches. Chaque t\^ache possède 
+ses propres paramètres appelés \emph{skill parameters}.
+La méthode de reconnaissance de t\^ache est décomposée en deux étapes:
+d'abord, étiqueter tous les segments temporels du mouvement 
+observé avec les noms des t\^aches.
+La seconde est l'estimation des \emph{skill parameters} pour chaque segment.
+Chaque t\^ache est détectée par l'analyse de trajectoires projetées
+dans un espace spécifique. Par exemple, la t\^ache \emph{faire un pas} est détectée
+en analysant la trajectoire d'un pied;
+une t\^ache de \emph{squat} est détectée en analysant la trajectoire verticale
+du bassin. Le critère utilisé pour la détection et le choix des espaces de projections
+sont ad-hoc, construits manuellement pour un mouvement particulier qui doit être imité par
+le robot.
+D'une manière similaire, ~\cite{muhlig09}
+utilise un ensemble d'espaces spécifiques dans lequel le mouvement 
+observé est projeté. Des critères ad-hoc
+%Observations of a movement from sensors (camera, or motion capture system)
+sont utilisés pour choisir automatiquement l'ensemble des espaces de t\^aches qui va 
+décrire le mieux un mouvement donné, dans le but de focaliser la technique 
+d'apprentissage dans ce nouvel espace. Le critère utilisé pour la
+sélection de l'espace de t\^ache est exprimé par
+des fonctions de coût inspirées de neurosciences:
+la saillance de l'objet manipulé, la variance de la dimension d'un espace à travers
+plusieurs démonstrations, et quelques heuristiques qui indiquent que les mouvements
+fatiguants ou inconfortables sont provoqués par l'exécution de t\^aches. Ces heuristiques
+règlent le problème de détection de t\^aches d'immobilité.
+Cette méthode présentée ajoute des informations de plus haut niveau que les analyses
+purement statistiques et s'appuie sur les espaces de t\^aches comme 
+étant des espaces appropriés pour représenter le mouvement. Cependant, l'efficacité
+de la sélection de t\^aches dépend de la puissance des heuristiques.
+
+L'approche commune de ces travaux est de projeter le mouvement observé dans un espace réduit
+particulier, dans lequel la reconnaissance est plus facile. 
+Ces espaces sont choisis arbitrairement~\cite{nakaoka07}, 
+séléctionnés automatiquement~\cite{muhlig09}, ou obtenus par apprentissage~\cite{peters08}. 
+L'analyse en composantes principales (PCA) est une technique de réduction de dimension qui 
+permet de trouver des espaces réduits. 
+Malheureusement cette technique ne tient pas compte des corrélations non linéaires
+entre les différents espaces réduits, et donc la technique est inadapté aux mouvements humanoïdes
+qui comporte de telles corrélations non linéaires.
+Il existe des techniques d'analyse en composantes principales non linéaires. Ces 
+techniques sont plus adaptées aux mouvements humanoïdes~\cite{chalodhorn09}.
+Cependant les espaces réduits sont dégagés automatiquement, or, en contrôle,
+des espaces de tailles réduites, présentant des corrélations non linéaires, sont construit pour définir des objectifs et
+moduler le comportement du robot.
+Par exemple l'approche de la fonction de t\^aches~\cite{samson91} 
+exprime des commandes génériques dans un espace de t\^ache donné de dimension $n$.
+L'approche a été étendue pour gérer un ensemble hiérarchique de t\^aches~\cite{siciliano91, nakamura87}
+en utilisant la redondance du système.
+Ces espaces de t\^ache représentent ainsi des espaces parfaitement appropriés pour
+effectuer des analyses et reconnaître des motifs particuliers.
+Nous proposons ainsi d'utiliser directement ces contrôleurs connus pour la génération
+de mouvement plutôt que d'utiliser des primitives déterminées automatiquement a posteriori.
+\medskip
+%In this work the control law is obtained by a \emph{stack of tasks}
+%(SoT)~\cite{mansard07} ie hierarchical inverse kinematics
+%\cite{siciliano91}.\\                                       
+
+%In this paper another point of view is taken: the control theory based
+%one. Control theory constitutes the second corpus that accompanies
+%robotics development. Originating from mechanics and applied
+%mathematics, it focuses on robot motion control~\cite{murray94,
+%siciliano10}. Among all the
+%contributions on linear and non-linear systems, robot control theory has
+%provided efficient concepts for motion generation. The research
+%initiated by A. Li\'egeois~\cite{liegeois77} on redundant robots (i.e. robots that have
+%more degrees of freedom than necessary to perform a given task), and
+%then developed by Y. Nakamura~\cite{nakamura91}, B. Siciliano, J.J. Slotine~\cite{siciliano91} and O.
+%Khatib~\cite{khatib87} introduce mathematical machinery based on linear algebra and
+%numerical optimization that allows for clever ways to model the symbolic
+%notion of \emph{task}~\cite{samson91}.\\
+
+%Those \emph{tasks} are defined by their tasks spaces (eg. position of the hand
+%in an arbitrary frame\cite{nakamura86a,khatib87}, or position of a visual feature in the image
+%plane \cite{espiau92,hutchinson96a}), a reference behavior in those tasks spaces
+%(eg. exponential decrease to zero) and by the differential link between
+%the task space and the actuator space, typically the task Jacobian.
+%Given a set of active task, the corresponding control law can be
+%obtained by inverting the equation of motion of the robot. 
+
+%In this work, the analyzed motion is not seen as a sequence of motion primitives but as a
+%superimposition of controllers. The recognition of sequences
+%is out of the scope of the paper.
+%The task-function is generally used to generate a motion\cite{siciliano91, mansard07}, and
+
+Dans le chapitre~\ref{chap:sot}, le formalisme de la fonction de t\^aches 
+a été présenté. Chaque t\^ache peut \^etre utilisée pour générer un
+modèle de mouvement dans diverses situations.
+Dans ce sens, une t\^ache est à la fois un contr\^oleur qui peut 
+générer un mouvement, mais également un descripteur du mouvement
+exécuté.
+Ce descripteur est quasi symbolique, mais contient aussi des paramètres
+additionnels qui caractérisent la façon dont il est exécuté : par exemple,
+une t\^ache régie par une décroissance exponentielle est paramétrée par
+$\lambda$ qui caractérise la vitesse de décroissance. Dans ce chapitre, 
+nous proposons d'utiliser les t\^aches comme un ensemble de descripteurs
+pour reconnaitre un mouvement observé, en identifiant l'ensemble
+des t\^aches qui ont été utilisées pour générer ce mouvement (voir la figure~\ref{fig:taskReco}).
+
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.6\linewidth]{figures/chapitre5/taskReco.ps}
+  \end{center}
+  \caption[La reconnaissance de t\^aches.]{Nous proposons de déterminer automatiquement quelles sont les t\^aches,
+  parmi un ensemble connu, qui ont servi à générer le mouvement observé.}
+  \label{fig:taskReco}
+\end{figure}
+
+L'ensemble des t\^aches identifiées est utilisé pour caractériser le mouvement observé,
+par exemple pour distinguer deux mouvements visuellement proches.
+
+Nous présentons d'abord les hypothèses considérées pour l'application
+de la méthode de reconnaissance de t\^aches, ensuite, les différentes
+étapes constituant la reconnaissance de t\^aches sont présentées.
+Ensuite, des expérimentations sont effectuées en simulation pour illustrer le comportement
+de la méthode dans des conditions idéales, puis en utilisant
+un système capture de mouvement pour acquérir les mouvements à analyser joués par un vrai robot.
+Ces expérimentations illustrent la précision et la robustesse aux bruits de la reconnaissance de t\^aches en 
+distinguant des paires de mouvements visuellement proches. Enfin,
+des expérimentations prospectives sur la validité de la méthode
+pour l'analyse du mouvement humain sont présentées.

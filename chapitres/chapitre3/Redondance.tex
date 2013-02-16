@@ -1,0 +1,624 @@
+\section{Cinématique inverse}
+\label{sec:inversekine}
+Le problème de la cinématique inverse consiste à déterminer le mouvement à appliquer à
+un corps poly-articulé pour satisfaire un objectif désiré dans un espace de travail (par exemple
+l'espace cartésien).
+Le champ d'application de la cinématique inverse s'étend au domaine de la robotique
+pour le contr\^ole, en animation graphique et dans les jeux vidéo pour animer
+des corps poly-articulés tels que des personnages ou des animaux, mais aussi
+en bioinformatique pour modéliser les mouvements de protéines. La difficulté
+de ce problème réside dans l'explosion combinatoire due au grand nombre
+d'articulations à contrôler. Cette partie présente le problème de la cinématique inverse
+ainsi que les principales méthodes permettant de le résoudre.
+
+\subsection{Formulation du problème}
+La cinématique est l'étude du mouvement des corps d'un point de vue strictement géométrique
+et temporel. Les forces et les moments agissant sur ces corps ne sont pas considérés.
+Un système cinématique est composé de corps reliés entre eux par des articulations possédant un
+ou plusieurs degrés de liberté. Ces systèmes peuvent être
+représentés sous la forme d'un arbre dont les branches
+sont des sous-chaînes cinématique (voir la figure~\ref{fig:kinechain} pour un exemple de système cinématique).
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.4\linewidth]{figures/chapitre3/RobotJacobienne.eps}
+  \end{center}
+  \caption[Un exemple de système cinématique de type humanoïde.]{Un exemple de système cinématique de type humanoïde. En fonction de la
+  t\^ache, une sous-chaine cinématique peut être utilisé (par exemple une sous-chaine associé à un bras).}
+  \label{fig:kinechain}
+\end{figure}
+Un système cinématique peut être décrit par sa configuration articulaire :
+\begin{equation}
+  \mathbf{q} = (q_0, \ldots, q_n) \in \mathbb{R}^n
+  \label{eq:configArt}
+\end{equation}
+Ces données articulaires peuvent par exemple correspondre à des valeurs
+angulaires dans le cas où l'articulation est un pivot.
+L'ensemble de ces données articulaires représente l'espace articulaire.
+Dans le cas d'un robot de type bras articulé industriel à six degrés de liberté ,
+l'espace articulaire correspond au vecteur de dimension six dont les éléments
+sont les valeurs angulaires de chaque articulation (voir la figure~\ref{fig:robot6}).
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.3\linewidth]{figures/chapitre3/robot6.eps}
+  \end{center}
+  \caption{Un exemple de robot de type bras articulé industriel à six degrés de liberté.}
+  \label{fig:robot6}
+\end{figure}
+
+Le problème de géométrie directe consiste à déterminer
+la position d'un point appartenant au robot à partir d'une configuration
+articulaire donnée (voir exemple dans la figure~\ref{fig:directKine}).
+Tandis que le problème de géométrie inverse consiste à déterminer
+une configuration articulaire correspondant à une position désirée.
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.4\linewidth]{figures/chapitre3/directKine.ps}
+  \end{center}
+  \caption[Géométrie directe.]{Le problème de géométrie directe consiste à calculer 
+  la position du point $\mbf{p}$ en fonction de la configuration du robot
+  $\mbf{q} = [\theta_1, \theta_2]$.}
+  \label{fig:directKine}
+\end{figure}
+Le problème qui consiste à déterminer par la relation inverse 
+$\left[ \begin{array}{cc}
+  \mbf{v}\\
+  \boldsymbol\omega
+\end{array}
+\right] 
+  \rightarrow \mbf{\dot{q}}$ 
+une vitesse articulaire 
+amenant un effecteur à une position précise dans l'espace cartésien en fonction de la configuration
+articulaire actuelle, est
+appelé la cinématique inverse (voir la figure~\ref{fig:ik}). 
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.5\linewidth]{figures/chapitre3/ik.ps}
+  \end{center}
+  \caption[Cinématique inverse.]{Le problème de la cinématique inverse est de trouver les modifications à apporter
+  à la configuration articulaire $\mbf{q}$ pour qu'un l'effecteur atteigne une position désirée $\mbf{p}^*$.}
+  \label{fig:ik}
+\end{figure}
+
+\subsection{Résolution du problème de cinématique inverse}
+Le problème de la cinématique inverse peut être résolu de plusieurs manières.
+Pour les robots simples (avec peu de degrés de liberté), le calcul analytique est envisageable. Elle consiste à 
+résoudre un système équations souvent non linéaires. Une fois résolues, le résultat est alors obtenu
+directement en une seule étape. Il s'agit de l'approche classique
+en robotique pour le contrôle des bras articulés possédant jusqu'à 
+six degrés de liberté car la solution analytique est rapide à calculer~\cite{craig04}.
+Malheureusement, dans le cas général d'une structure articulée avec beaucoup de degrés
+de liberté, il n'existe pas de solutions analytique
+calculable.
+
+Il est aussi possible de résoudre le problème de cinématique inverse 
+par apprentissage, via des exemples, de la relation $\left[ \begin{array}{cc}
+  \mbf{v}\\
+  \boldsymbol\omega
+\end{array}
+\right]  \rightarrow \mbf{\dot{q}}$~\cite{dsouza01}. 
+Cette méthode est intéressante
+lorsque le modèle du robot n'est pas connu avec exactitude. Elle
+permet aussi de se restreindre aux configurations réalisables sur le 
+robot et d'obtenir des mouvements dont l'allure n'est pas 
+artificielle. C'est particulièrement important lorsqu'il s'agit
+d'animer des personnages par exemple. Les inconvénients de cette méthode sont hérités des méthodes par apprentissage,
+c'est-à-dire que la relation échantillonnée $ \left[ \begin{array}{cc}
+  \mbf{v}\\
+  \boldsymbol\omega
+\end{array}
+\right] \rightarrow \mbf{\dot{q}}$
+est spécifique au robot considéré et la qualité de la modélisation dépend de la qualité
+des données d'entrainement.
+
+L'alternative la plus populaire est d'effectuer une résolution numérique.
+La méthode est itérative, et consiste à linéariser le système
+autour de l'état courant, puis d'effectuer une descente de gradient
+afin de converger vers la solution.
+
+\subsubsection{Formulation linéaire et non-linéaire}
+Une des méthodes pour résoudre le problème de cinématique inverse consiste à donner
+à un solveur non-linéaire une fonction de coût pour 
+calculer des postures satisfaisant 
+des contraintes représentant par exemple des contacts~\cite{escande06}.
+Il est aussi possible de linéariser le problème et résoudre itérativement
+en calculant des petits incréments de la configuration~\cite{nakamura90}.
+Ces incréments font converger la configuration courante
+de la chaîne cinématique vers une configuration satisfaisant les
+objectifs. Ainsi, les itérations successives fournissent un chemin
+entre la posture initiale et la posture satisfaisant les objectifs, et donc
+ce chemin peut \^etre utilisé comme une commande pour un robot.
+
+\subsubsection{Linéarisation}
+La linéarisation est effectuée en calculant la jacobienne de la fonction:
+\begin{equation}
+  \mbf{f} \rightarrow \mbf{f}(\mbf{q}) = \mbf{p}
+  \label{eq:simpleKine}
+\end{equation}
+\noindent où $\mbf{p}$ peut par exemple être la position de l'effecteur d'un robot.
+La jacobienne est une matrice qui généralise la notion de dérivée de fonction
+scalaire. Dans le cas de \eqref{eq:simpleKine}, la jacobienne $\mbf{J}$ s'écrit:
+\begin{equation}
+  \mbf{J} = \left(
+  \begin{array}{ccc}
+    \dpartial{f_1}{q_1} & \ldots & \dpartial{f_1}{q_n}\\
+    \vdots & \ddots & \vdots \\
+    \dpartial{f_m}{q_1} & \ldots & \dpartial{f_m}{q_n}
+  \end{array}
+  \right)
+  \label{eq:Jacobian}
+\end{equation}
+La linéarisation permet l'approximation au premier ordre suivante:
+\begin{equation}
+  \Delta \mbf{p} = \mbf{J} \Delta \mbf{q}
+  \label{eq:directKineLin}
+\end{equation}
+
+La jacobienne est ensuite inversée pour obtenir une approximation
+locale de la fonction:
+\begin{equation}
+  \mbf{p} \rightarrow \mbf{q} = \mbf{f}^{-1}(\mbf{p})
+  \label{eq:simpleInvKine}
+\end{equation}
+On a alors une approximation de l'inverse:
+\begin{equation}
+  \Delta \mbf{q} = \mbf{J}^{-1} \Delta \mbf{p} + o(\Vert \Delta\mbf{q} \Vert^2)
+  \label{eq:ik}
+\end{equation}
+On pourra donc localement faire varier $\mbf{q}$ dans la direction de la solution.
+Cette linéarisation pourra être utilisé pour résoudre de manière itérative le problème 
+de cinématique inverse.
+Malheureusement, la jacobienne n'est pas toujours inversible. Entres autres, $\mbf{J}$ n'est pas souvent carrée.
+
+\subsubsection{Simplification du problème d'inversion}
+Il est possible de contourner la difficulté de l'inversion de la jacobienne en simplifiant
+le problème.
+Une première idée est d'utiliser la transposée de la jacobienne plutôt 
+que son inverse pour résoudre le problème de cinématique inverse~\cite{wolovich84}.
+Ainsi contrairement à~\eqref{eq:ik} on choisit le prochain $\Delta \mathbf{q}$ comme suit :
+\begin{equation}\label{IK:Tr:Geq1}
+  \alpha \mbf{J}^{T} \Delta \mathbf{p}
+\end{equation}
+L'intuition, derrière cette approximation, est de faire l'analogie avec
+la relation entre les couples moteurs et les forces dans l'espace cartésien.
+Si $\mathbf{f}$ est la force qui
+va amener le robot en direction de l'objectif, et $\boldsymbol\tau$ le moment articulaire interne
+à la chaine cinématique nécessaire, cette relation est~:
+\begin{equation*}
+  \mbf{\tau} = \mbf{J}^T \mbf{f}
+\end{equation*}
+Ainsi une quantité représentant des déplacements angulaires est liée à une quantité représentant des 
+déplacements dans l'espace par la transposée de la jacobienne.
+
+Cette méthode est rapide car il n'y a pas d'opération d'inversion
+à effectuer pour calculer la variation de $\mbf{q}$ à appliquer.
+Cependant, la convergence n'est pas rapide, et en particulier
+au voisinage de la solution, puisque 
+les variations à appliquer de chaque articulations sont calculées sans tenir compte de l'influence
+des autres articulations comme le montre~\eqref{eq:exTranspose} pour un exemple de robots
+à deux degrés de liberté et un objectif de dimension deux.
+\begin{equation}
+  \left(
+  \begin{array}{c}
+    \Delta \theta_1\\
+    \Delta \theta_2
+  \end{array}
+  \right)
+  = \alpha \left( 
+  \begin{array}{cc}
+    \dpartial{x}{\theta_1} & \dpartial{y}{\theta_1}\\
+    \dpartial{x}{\theta_2} & \dpartial{y}{\theta_2}
+  \end{array}
+  \right)
+  \left(
+  \begin{array}{c}
+    \Delta x\\
+    \Delta y
+  \end{array}
+  \right)
+  = \alpha \left( 
+  \begin{array}{c}
+    \dpartial{x}{\theta_1} \Delta x + \dpartial{y}{\theta_1} \Delta y\\
+    \dpartial{x}{\theta_2} \Delta x + \dpartial{y}{\theta_2} \Delta y
+  \end{array}
+  \right)
+  \label{eq:exTranspose}
+\end{equation}
+
+Une autre méthode itérative appelée \emph{cyclic coordinate descent}
+consiste à calculer séquentiellement les variations à appliquer à chaque articulation~\cite{luenberger84, wang91}.
+Chaque itération est décomposée en $n$ étapes, pour une chaine articulaire en série
+de $n$ degrés de liberté. Chaque étape consiste à trouver la variation
+pour une articulation (en remontant de l'effecteur jusqu'à la base) qui va minimiser la distance entre l'effecteur
+et l'objectif.
+Ceci simplifie le calcul d'inversion puisqu'elle ne concerne plus qu'un vecteur
+de dérivées partielles (une colonne de la jacobienne, voir~la figure~\ref{fig:ccd}).
+La méthode est rapide, mais converge lentement. De plus, à cause de l'approche séquentielle,
+les variations des premières articulations auront tendance à être plus grande
+que les suivantes: les postures calculées peuvent donc paraître non naturelles.
+Un autre problème est que la méthode est difficile à adapter pour des systèmes
+à plusieurs effecteurs.
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.5\linewidth]{figures/chapitre3/ccd.ps}
+  \end{center}
+  \caption[\emph{Cyclic coordinate descent}.]{Illustration de la méthode \emph{cyclic coordinate descent}, dans laquelle les articulations
+  sont traités séquentiellement amenant ainsi à ne considérer qu'une colonne de la jacobienne
+  par étape. L'inversion en est simplifiée.}
+  \label{fig:ccd}
+\end{figure}
+
+Ces méthodes reposant sur la simplification de l'inversion de la jacobienne n'apportent pas de 
+résultats satisfaisants pour la convergence et la généricité. C'est pour cela que la 
+méthode la plus utilisée est l'utilisation de la pseudo inverse de la jacobienne décrite
+dans le paragraphe suivant.
+
+\subsubsection{Pseudo inverse de la jacobienne}
+La pseudo inverse notée $\mbf{A}^+$, d'une matrice notée $\mbf{A}$ est une généralisation de l'inverse d'une matrice~\cite{benisrael03, moore20, penrose55}.
+Elle peut être calculée pour n'importe quelle matrice, même celles qui ne sont 
+pas carrées ou de rang plein. Elle possède certaines propriétés
+de l'inverse d'une matrice. Le type de pseudo inverse le plus
+utilisé est la pseudo inverse de Moore-Penrose qui est définie par les conditions
+suivantes:
+\begin{align}
+  \mbf{A}\mbf{A}^+\mbf{A} & = \mbf{A}\\
+  \label{eq:defPseudoInv2}
+  \mbf{A}^+\mbf{A}\mbf{A}^+ & = \mbf{A}^+\\
+  (\mbf{A}\mbf{A}^+)^T & = \mbf{A}\mbf{A}^+\\
+  (\mbf{A}^+\mbf{A})^T & = \mbf{A}^+\mbf{A}
+  \label{eq:defPseudoInv}
+\end{align}
+\noindent La pseudo inverse permet d'obtenir une solution minimale au sens des moindre carrés 
+à la fois de la distance à la solution ($0$ si la solution est atteignable) et
+de la norme du vecteur solution d'un système d'équation linéaire. Ainsi pour l'équation~\eqref{eq:directKineLin},
+la pseudo inverse permet d'obtenir la solution homogène:
+\begin{equation}
+  \Delta \mbf{q}^* = \min \underset{\Delta \mbf{q}}\argmin \Vert \mbf{J} \Delta \mbf{q} - \Delta \mbf{p} \Vert^2
+  = \mbf{J}^+ \Delta \mbf{p}
+  \label{eq:lstsqsol}
+\end{equation}
+
+Une autre propriété intéressante de la pseudo inverse est que la matrice $(\mbf{I} - \mbf{J}^{+} \mbf{J})$ effectue une
+projection dans le noyau de $\mbf{J}$. Cela signifie que pour tout vecteurs $\mbf{z}$,  
+$\mbf{J}(\mbf{I} - \mbf{J}^{+} \mbf{J}) \mbf{z} = \textbf{0}$ (direct d'après~\eqref{eq:defPseudoInv2}). 
+Cela permet d'obtenir d'autres solutions pour $\Delta \mathbf{q}$:
+
+\begin{equation}\label{IK:Ps:EqNullspace}
+  \Delta \mathbf{q} = \mbf{J}^{+} \Delta \mathbf{p} + (\mbf{I} -\mbf{J}^{+} \mbf{J}) \mbf{z}
+\end{equation}
+
+$\Delta \mathbf{q}$ minimise encore $\Vert \mbf{J} \Delta \mathbf{q} - \Delta \mathbf{p} \Vert^2$.
+La minimisation de $\Vert \Delta \mbf{q} \Vert$ est alors perdue, sauf dans le cas $\mbf{z} = 0$.
+Nous montrerons plus tard que cette propriété permet de gérer des commandes secondaires en utilisant
+$\mbf{z}$ pour faire varier la solution selon des critères choisis.
+
+\subsubsection{Calcul de la pseudo inverse}
+Une méthode efficace pour calculer la pseudo inverse d'une matrice est d'effectuer
+une décomposition en valeurs singulières (singular value decomposition, SVD) sur cette matrice. Les propriétés
+de cette décomposition simplifient le calcul de la pseudo inverse.
+La décomposition en valeurs singulières d'une matrice $\mbf{J}$ de rang $r$ 
+consiste à exprimer $\mbf{J}$ sous la forme :
+\begin{equation*}
+  \mbf{J} = \mbf{U} \mbf{\Sigma} \mbf{V}^{T}
+\end{equation*}
+\noindent où $\mbf{U}$ et $\mbf{V}$ sont des matrices orthogonales et $\mbf{\Sigma}$ est de la
+forme:
+\begin{equation}
+  \mbf{\Sigma} = \left( \begin{array}{cc}
+    \mbf{D} & \textbf{0}\\
+    \textbf{0} & \textbf{0}
+  \end{array} \right)
+  \label{eq:sigmaSVD}
+\end{equation}
+\noindent $\mbf{D}$ est diagonale carrée de dimension $r$ et $\textbf{0}$ sont des matrices ne contenant que
+de éléments nuls. 
+Si $\mbf{J}$ est de dimension $m \times n$, alors $\mbf{U}$ est de dimension $m \times m$, 
+$\mbf{\Sigma}$ est de dimension $m \times n$ et $\mbf{V}$ est de dimension $n \times n$ (voir la figure~\ref{fig:svd}). 
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=0.8\linewidth]{figures/chapitre3/svd.ps}
+  \end{center}
+  \caption{Décomposition en valeurs singulières d'une matrice $\mbf{J}$.}
+  \label{fig:svd}
+\end{figure}
+Les seuls membres non nuls de la matrice $\mbf{D}$ sont les valeurs
+$\sigma_i$ selon la diagonale avec
+$\sigma_1 \geq \sigma_2 \geq \ldots \geq \sigma_r \geq 0$. 
+
+Soient $\mbf{u}_i$ et $\mbf{v}_i$ les $i^{\mbox{\footnotesize\it ème}}$ colonnes de $\mbf{U}$ et $\mbf{V}$. 
+Les $r$ premières colonnes de $\mbf{U}$ forment une base orthonormée de l'image de $\mbf{J}$, et 
+les vecteurs $\mathbf{v}_{r+1}$, \ldots, $\mathbf{v}_n$ forment une base orthonormée du noyau de $\mbf{J}$. 
+La décomposition en valeurs singulières existe toujours. En ne considérant que les $r$ premier
+vecteur, $\mbf{J}$ peut être
+réduite à :
+\begin{equation}
+  \mbf{J} = \sum_{i=1}^{r} \sigma_i \mathbf{u}_i
+	\mathbf{v}_i^T
+\end{equation}
+%\subsection{Pseudo Inverse et SVD}
+Les matrices $\mbf{U}$ et $\mbf{V}$ sont orthogonales, et donc
+$\mbf{U}^{-1} = \mbf{U}^T$ et $\mbf{V}^{-1} = \mbf{V}^T$. $\mbf{D}$ est diagonale,
+et donc son inverse est obtenu en remplaçant tout ses coefficients
+non nuls par leurs inverses. Ainsi, 
+le calcul de la pseudo inverse de $\mbf{J}$ est directe:
+\begin{equation}
+  \mbf{J}^+ = \mbf{V} \mbf{\Sigma}^+ \mbf{U}^T = \mbf{V} \left( \begin{array}{cc}
+    \mbf{D}^{-1} & \textbf{0}\\
+    \textbf{0} & \textbf{0}
+  \end{array} \right) \mbf{U}^T  = \sum_{i=1}^r \sigma_{i}^{-1} \mathbf{v}_i \mathbf{u}_i^{T}
+\end{equation}
+
+\subsubsection{Singularités}
+Les configurations singulières sont définies par l'ensemble:
+\begin{equation}
+  \left\{ q \in \mathbb{R}^n | \mathrm{rank}(\mbf{J}(\mbf{q})) < \mathrm{rank}(\mbf{J}(\mbf{q}_0)) \right\}
+  \label{eq:singularity}
+\end{equation}
+\noindent où $\mbf{q}_0$ est la configuration articulaire initiale.
+Pour ces configurations, la dimension de l'espace $\mathbb{I}(\mbf{q}) = \mathrm{Image}(\mbf{J}(\mbf{q}))$
+diminue brusquement.
+Le problème de la pseudo inverse se pose à la frontière extérieure des singularités.
+En effet, la pseudo inverse est une fonction continue des matrices dans les ensembles
+de rang constant. Lors de la perte de rang, une discontinuité de la fonction 
+pseudo inverse se produit. Elle s'accompagne d'une limite infinie lorsqu'on se rapproche de la
+frontière extérieure de la singularité.
+La décomposition en valeurs singulières montre plus clairement ce problème:
+lorsque les valeurs des coefficients $\sigma_i$ sont très faibles,
+leurs inverses, nécessaires dans le calcul de la pseudo inverse, vont tendre
+vers l'infini et rendre les solutions arbitrairement grandes autour de ces configurations.
+Les problèmes apparaissent donc aux voisinages des singularités.
+
+Dans l'exemple de la figure~\ref{fig:singularities},
+le déplacement de l'effecteur pour un bras articulé à deux degrés de liberté 
+en rotation est représenté par les bras de levier.
+En singularité, les coefficients $\sigma_i$ sont nuls et donc $\dpartial{\mbf{f}}{q_1}$ et $\dpartial{\mbf{f}}{q_2}$
+sont parallèles, $\mathbb{I}(q)$
+perd brusquement une dimension et
+l'objectif $\mbf{\dot{p}}^*$ n'est plus accessible par combinaisons
+linéaire, alors que dans une autre position, $\mbf{\dot{p}}^*$ aurait été accessible.
+\begin{figure*}
+  \centering
+  \subfigure[La posture est non singulière.]{
+  \resizebox{.31\textwidth}{!} {
+    \input{figures/chapitre3/singularity1.tex}
+  }
+  \label{fig:singularities:a}
+  }
+  \subfigure[Au voisinage de la singularité.]{
+  \resizebox{.31\textwidth}{!} {
+    \input{figures/chapitre3/singularity2.tex}
+  }
+  \label{fig:singularities:b}
+  }
+  \subfigure[En singularité.]{
+  \resizebox{.31\textwidth}{!} {
+    \input{figures/chapitre3/singularity3.tex}
+  }
+  \label{fig:singularities:c}
+  }
+  \caption[Singularités.]{Illustration du problème de singularité pour un robot à deux degrés de liberté en rotation.
+  Dans la figure~\ref{fig:singularities:a}, il n'y a pas de singularité. La figure~\ref{fig:singularities:b}
+  illustre le cas au voisinage de la singularité: les directions de déplacement
+  dû aux variations des articulations $\dpartial{\mbf{f}}{q_1}$ et $\dpartial{\mbf{f}}{q_2}$ sont très proches. 
+  La figure~\ref{fig:singularities:c}
+  montre un exemple de singularité:
+  l'objectifs $\mbf{p}^*$ n'est plus 
+  accessible par combinaisons linéaire, alors que dans une autre position de départ,
+  $\mbf{p}^*$ aurait été accessible.
+  }
+  \label{fig:singularities}
+\end{figure*}
+
+\subsubsection{Amortissement de la pseudo inverse}
+%\subsection{Amortissement par les moindres carrés et SVD}
+Pour gérer les singularités, il est possible de modifier la décomposition en valeurs singulières
+afin d'introduire un facteur d'amortissement~\cite{nakamura86, wampler86}. Ce facteur 
+va garantir que la norme de la solution reste sous une valeur prédéfinie dépendant uniquement
+de la norme de $\mbf{p}$ (et indépendante de $\mbf{J}$).
+Le problème~\eqref{eq:lstsqsol} est modifié pour limiter la norme de $\Delta \mbf{q}$:
+\begin{equation}
+  \Delta \mbf{q}^* = \min \underset{\Delta \mbf{q}}\argmin \Vert \mbf{J} \Delta \mbf{q} - \Delta \mbf{p} \Vert^2 
+  - \eta^2 \Vert \Delta \mbf{q} \Vert^2
+  \label{eq:dampedlstsqsol}
+\end{equation}
+\noindent $\eta$ est le facteur d'amortissement qui va permettre de faire un compromis
+entre l'erreur de $\Vert \mbf{J} \Delta \mbf{q} - \Delta \mbf{p} \Vert^2$ et la norme
+de la solution. Le cas $\eta = 0$ correspond à~\eqref{eq:lstsqsol}. Pour
+un $\eta > 0$, il est prouvé que la solution de ce problème est:
+\begin{equation*}
+  \Delta \mbf{q}^* = \mbf{J}^T ( \mbf{J} \mbf{J}^T + \eta^2 \mbf{I} )^{+} \Delta \mbf{p} = \mbf{J}^{\dagger} \Delta \mbf{p}
+\end{equation*}
+
+Et finalement la décomposition en valeurs singulières de la pseudo inverse amortie $\mbf{J}^{\dagger}$ amène au résultat suivant:
+\begin{equation}
+ \mbf{J}^{\dagger} = \mbf{J}^T ( \mbf{J} \mbf{J}^T + \eta^2 \mbf{I} )^{+} = 
+ \sum_{i = 1}^{k}{\frac{\sigma_i}{\sigma_i^2 + \eta^2} \mathbf{v}_i
+	\mathbf{u}_i^T }
+\end{equation}
+On remarque que l'inverse des coefficients $\sigma_i$ sont remplacés par:
+\begin{equation}
+  \sigma_i^{\dagger} = \frac{\sigma_i}{\sigma^2 + \eta^2}
+  \label{eq:dampingsvd}
+\end{equation}
+\noindent qui est continue et borné par $\frac{1}{2\eta}$ (voir la figure~\ref{fig:damp}). 
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.48\textwidth}{!}{
+      \input{figures/chapitre3/plotDampEdit.tex}
+    }
+  \end{center}
+  \caption{Illustration du comportement de $\sigma_i^{-1}$ et de $\sigma_i^{\dagger}$.}
+  \label{fig:damp}
+\end{figure}
+Lorsque les $\sigma_i$ sont grands $\mbf{J}^{\dagger} \approx \mbf{J}^{+}$. Donc la méthode de l'amortissement 
+par les moindres carrés agit comme celle de la pseudo inverse loin des
+singularités, et adoucit les résultats de la pseudo inverse au voisinage des singularités. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\FloatBarrier
+\section{La fonction de t\^ache}
+Dans la partie précédente, on ne s'est intéressé qu'aux relations entre des
+positions et vitesses de l'effecteur et l'espace des configurations.
+La fonction de t\^ache permet de généraliser ce concept à d'autres fonction que la
+position de l'effecteur.
+Une fonction de t\^ache permet de relier l'espace articulaire
+à un espace de t\^ache:
+\begin{equation}
+  \begin{array}{cccc}
+  \mathbf{e} : &\mathbb{R}^n  &\rightarrow & \mathbb{R}^m
+  \\ &\mathbf{q} &\mapsto &\mathbf{e}(\mathbf{q})
+\end{array}
+  \label{eq:fwdKine}
+\end{equation}
+
+L'espace de la t\^ache est l'espace dans lequel est exprimé une t\^ache robotique.
+L'espace de la t\^ache est choisi en fonction de la
+nature de la t\^ache robotique à effectuer, et peut par exemple être l'espace cartésien ou encore un sous espace 
+de l'espace des configurations. Un cas particulier est bien sûr
+une paramétrisation de la position de l'effecteur, étudié dans le paragraphe~\ref{sec:inversekine}.
+
+L'exécution d'une t\^ache peut être considérée comme la régulation à zéro de la fonction de t\^ache associée.
+En prenant par exemple comme fonction de t\^ache $\mathbf{e}(\mathbf{q}) = \mathbf{s} - \mathbf{s}^*$
+correspondant à l'erreur entre un signal $\mathbf{s}$ et sa valeur désirée $\mathbf{s}^*$.
+Ainsi, la jacobienne $\mathbf{J}$ relie le vecteur erreur au vecteur
+de configuration:
+\begin{equation}
+  \mbf{\dot{e}} = \dpartial{\mbf{e}}{\mbf{q}} \mbf{\dot{q}} = \mbf{J} \mbf{\dot{q}}
+  \label{jacobianDef}
+\end{equation}
+
+Le comportement de la fonction de t\^ache doit être défini. Habituellement,
+en robotique, ce comportement est une décroissance exponentielle:
+\begin{equation}
+  \mbf{\dot{e}^*} = -\lambda \mbf{e}
+  \label{expoDecrease}
+\end{equation}
+où $\lambda$ est un paramètre positif permettant d'ajuster la vitesse
+de convergence.
+$\mbf{J}$ n'étant pas toujours inversible, sa pseudo-inverse $\mbf{J}^+$ est utilisée
+pour inverser~\eqref{jacobianDef}:
+\begin{equation}
+  \mbf{\dot{q}} = \mbf{J}^+ \mbf{\dot{e}^*}
+  \label{eq:invKine}
+\end{equation}
+
+La cinématique inverse est généralement utilisée pour résoudre le problème de
+géométrie inverse consistant à trouver une configuration $\mbf{q}$ telle que
+$\mbf{e}(\mbf{q}) = 0$. 
+Pour qu'un robot puisse exécuter une t\^ache, la résolution
+de~\eqref{eq:invKine} est itérative.
+
+En choisissant~\eqref{expoDecrease} dans~\eqref{eq:invKine}, on retrouve
+la méthode itérative de Newton-Raphson (voir figure~\ref{fig:NewtonRaphson})
+consistant à faire converger $\mbf{e}(\mbf{q})$ vers $0$ de manière itérative.
+En utilisant des gains $\lambda$ suffisamment petits, la suite de 
+positions obtenue lors des itérations successives 
+constitue de plus un chemin reliant la position initiale à la solution
+problème de géométrie inverse. Ce chemin peut ensuite
+être utilisé comme commande au robot.
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.6\textwidth}{!}{
+    \input{figures/chapitre4/newtonRaphson.tex}
+    }
+  \end{center}
+  \caption{La méthode de Newton-Raphson pour résoudre itérativement $x(q) =0$.}
+  \label{fig:NewtonRaphson}
+\end{figure}
+
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\section{Redondance et hiérarchie de t\^aches}
+\label{chap:Redondance}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+La solution~\eqref{eq:invKine} peut être généralisée en utilisant le
+formalisme de la redondance présenté dans~\cite{siciliano91}. Le robot devient redondant par rapport à une t\^ache
+donnée en un point $\mbf{q}$ lorsque la dimension du tangeant à l'espace de configurations
+en $\mbf{q}$ est supérieure
+à la dimension de l'espace $\mathbb{I}(\mbf{q}) = \mathrm{Image}(\mbf{J}(\mbf{q}))$ de la t\^ache considérée. Ainsi la généralisation
+de~\eqref{eq:invKine} donne:
+\begin{equation}
+  \mbf{\dot{q}} = \mbf{J}^+ \mbf{\dot{e}^*} + \mbf{P}\mbf{z} 
+  \label{eq:controlLaw}
+\end{equation}
+où $\mbf{P} = \mbf{I} - \mbf{J}^+\mbf{J}$ est le projecteur orthogonal
+dans l'espace nul de $\mbf{J}$, et $\mbf{z}$ est un vecteur représentant
+une commande secondaire qui, gr\^ace au projecteur,
+ne va pas perturber la t\^ache $\mbf{\dot{e}^*}$ en exploitant par exemple
+les degrés de liberté non utilisés. Une hierarchie de t\^aches est ainsi
+établie en définissant la t\^ache principale comme étant prioritaire par
+rapport à une t\^ache qui va se réaliser gr\^ace à la commande secondaire.
+
+\subsection{Loi de commande pour deux t\^aches}
+La commande secondaire $\mbf{z}$ introduite dans~\eqref{eq:controlLaw} peut
+être utilisée pour exécuter au mieux une seconde t\^ache en définissant $\mbf{z}$
+comme étant la commande qui va réaliser la relation de référence de la t\^ache: $\mbf{\dot{e}_2^*} = \mbf{J}_2 \mbf{\dot{q}}$.
+En introduisant~\eqref{eq:controlLaw} dans cette dernière équation on obtient:
+\begin{equation}
+  \mbf{\dot{e}_2^*} = \mbf{J}_2 \mbf{J}^+ \mbf{\dot{e}^*} + \mbf{J}_2 \mbf{P}\mbf{z}
+  \label{eq:zCompute}
+\end{equation}
+Cette dernière équation permet de calculer $\mbf{z}$.
+La commande associée pour réaliser deux t\^aches $\mbf{\dot{e}_1}$ et $\mbf{\dot{e}_2}$ (qui sera
+de priorité inférieure à $\mbf{\dot{e}_1}$) ayant
+comme consigne $\mbf{\dot{e}_1^*}$ et $\mbf{\dot{e}_2^*}$, s'écrit:
+\begin{equation}
+  \mbf{\dot{q}} = \mbf{J}_1^+ \mbf{\dot{e}_1^*} + \mbf{P}_1 (\mbf{J}_2 \mbf{P}_1)^+(\mbf{\dot{e}}_ 2^* - \mbf{J}_2\mbf{J}_1^+ \mbf{\dot{e}_1^*})
+  \label{eq:controlLaw2taskExpand}
+\end{equation}
+Etant donné que $\mbf{P}_1$, l'opérateur de projection, est hermitien et idempotent, 
+\eqref{eq:controlLaw2taskExpand} s'écrit plus simplement:
+\begin{equation}
+  \mbf{\dot{q}} = \mbf{J}_1^+ \mbf{\dot{e}_1^*} + (\mbf{J}_2 \mbf{P}_1)^+(\mbf{\dot{e}}_ 2^* - \mbf{J}_2\mbf{J}_1^+ \mbf{\dot{e}_1^*})
+  \label{eq:controlLaw2taskSimple}
+\end{equation}
+
+Un couplage apparait donc entre les deux t\^aches: la réalisation de $\mbf{\dot{e}_2}$ 
+est modifiée pour ne pas perturber $\mbf{\dot{e}_1}$.
+
+\subsection{Loi de commande pour un nombre arbitraire de t\^aches}
+La loi de commande calculée pour deux t\^aches est étendue à un nombre arbitraire de t\^aches
+par récursion. Ces t\^aches sont ordonnées par priorités: une t\^ache
+de priorité 1 étant la t\^ache de plus haute priorité, et une t\^ache de priorité $n$ la plus basse.
+Ce qui équivaut à dire qu'une t\^ache $\mbf{\dot{e}}_i$ ne doit pas perturber une
+t\^ache $\mbf{\dot{e}}_j$ si $i>j$. La formulation récursive
+s'écrit~\cite{siciliano91} :
+\begin{equation}
+  \left\{
+  \begin{array}{ll}
+  \mbf{\dot{q}}_0 &= 0\\
+  \dot{\mbf{q}}_i &= \dot{\mbf{q}}_{i-1} + (\mbf{J}_i \mbf{P}_{i-1}^{A})^+
+(\dot{\mbf{e}}^*_i - \mbf{J}_i \dot{\mbf{q}}_{i-1}) , \ \ i = 1 \ldots n
+\end{array}
+  \right.
+  \label{eq:controlLawNtask}
+\end{equation}
+
+\noindent où $\mbf{P}_{i-1}^{A}$ est le projecteur
+dans l'espace nul de la jacobienne augmentée
+$\mbf{J}_i^A = (\mbf{J}_1, \ldots \mbf{J}_i)$.
+La vitesse articulaire
+réalisant toutes les t\^aches est $\dot{\mbf{q}}^* = \dot{\mbf{q}}_n$.
+Une formulation récursive pour le calcul du projecteur $\mbf{P}_{i-1}^{A}$ 
+est proposée par~\cite{baerlocher98}.
+\begin{equation}
+  \left\{
+      \begin{array}{rl}
+        \mbf{P}_0^A &= \mbf{I}\\
+        \mbf{P}_i^A &= \mbf{P}_{i-1}^A - (\mbf{J}_i \mbf{P}_{i-1}^A)^+(\mbf{J}_i \mbf{P}_{i-1}^A) , \ \ i = 1 \ldots n
+      \end{array}
+    \right.
+    \label{eq:projector}
+\end{equation}
+
+\noindent où $\mbf{I}$ est la matrice identité, $\mbf{J}_i$ est la matrice jacobienne de
+la t\^ache $i$. 
+Une implémentation complète de cette approche est proposée et 
+détaillée dans~\cite{mansard07}
+sous le nom de \emph{pile de t\^aches}. La représentation
+du mouvement par une pile de t\^aches permet d'ajouter des t\^aches,
+d'en supprimer ou de permuter les ordres de priorités entre deux t\^aches
+facilement. L'implémentation utilisée préserve la continuité de la loi de commande
+durant ces opérations. Les contraintes, comme les limites articulaires,
+peuvent \^etre prises en compte localement.
+

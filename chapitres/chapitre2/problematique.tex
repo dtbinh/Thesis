@@ -1,0 +1,62 @@
+\section{Approche proposée}
+Notre approche pour la reconnaissance de 
+mouvements s'inscrit dans la continuité des travaux réalisés au JRL et au LAAS-CNRS au sein
+de l'équipe Gepetto.
+Elle se focalise dans l'espace des t\^aches et par conséquent,
+à la reconnaissance de t\^aches.
+%Ceci permet
+%d'utiliser directement la relation entre l'espace des t\^aches 
+%et l'espace articulaire pour générer un mouvement.
+Plutôt que de construire un modèle discriminant ou génératif en utilisant 
+les outils statistiques, nous exploitons le modèle
+de génération de mouvements. En effet, ce modèle permet
+d'exprimer directement les corrélations non linéaires entre
+les variables de mouvements qui sont inhérentes aux mouvements
+humanoïdes. Les approches statistiques et les techniques de
+réduction de dimensions ne considèrent généralement que les corrélations linéaires.
+Nous utilisons le formalisme de la fonction de t\^ache pour projeter 
+le mouvement observé dans les espaces de t\^aches, caractérisant un mouvement, 
+ainsi que dans les espaces
+nuls. Ce formalisme sera présenté dans le chapitre suivant.
+\textbf{Contrairement à la majorité des travaux antérieurs qui s'intéressent
+aux mouvements composés de séquences de primitives, nous explorons les 
+mouvements complexes issus d'un empilement de contôleurs.}
+
+Nous ne considérons pas les séquencements d'actions ni la généralisation de mouvements:
+aucun apprentissage n'est réalisé. En effet, nous supposons que les modèles 
+de comportements sont connus puisque ce sont directement les modèles 
+de générations de mouvements utilisés pour contrôler le robot.
+Notre méthode de reconnaissance de t\^ache est formulée comme un problème d'identification
+de t\^aches actives parmis un ensemble connus de t\^aches possible. Notre méthode 
+est capable de détecter des t\^aches exécutées en parallèle en projetant
+les trajectoires observées dans des espaces caractéristiques.
+La méthode est aussi capable de gérer les éventuels couplages de t\^aches gr\^ace
+à l'utilisation d'un opérateur de projection dans les espaces nuls des t\^aches.
+
+\section{Plan du manuscrit}
+Le chapitre~\ref{chap:sot} introduit les généralités sur la 
+cinématique inverse et le concept de la fonction de t\^aches.
+Ces fonctions de t\^aches sont utilisées pour la génération de mouvements
+gr\^ace à une hiérarchisation de contrôleurs. La méthode
+de génération de mouvements utilisée tout au long des travaux présentés
+est une implémentation de cette approche: la \emph{pile de t\^aches}.
+La méthode de reconnaissance présentée dans ce manuscrit s'appuie sur les propriétés associées à 
+la fonction de t\^aches. Ces propriétés sont utilisées pour manipuler
+les observations de mouvements.
+
+Il est important de se placer dans un contexte proches des applications
+réelles. Ainsi, l'analyse des mouvements est précédée par une phase d'acquisition.
+Dans nos travaux, l'acquisition des mouvements s'effectue 
+par le biais d'un système de capture de mouvements optique.
+Le chapitre~\ref{chap:imitation} présente les différentes 
+technologies permettant d'enregistrer un mouvement, le traitement
+des données collectées ainsi que des exemples d'applications
+orientées vers la fonction de t\^aches.
+
+Les techniques présentées dans ces deux chapitres sont exploitées
+dans le chapitre~\ref{chap:reco} qui représente
+le c\oe ur de la contribution apportée dans ces travaux:
+une méthode de reconnaissance de t\^aches pour un robot humanoïde,
+capable de reconnaître des t\^aches exécutées en parallèles et de manière précise.
+Les différentes expériences en simulation et sur
+un vrai robot validant la méthode y sont détaillées.

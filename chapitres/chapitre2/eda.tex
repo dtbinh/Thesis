@@ -1,0 +1,230 @@
+\section{Apprentissage et représentation du mouvement}
+Un aspect critique dans l'apprentissage de mouvement est le
+choix de l'espace dans lequel l'apprentissage s'effectue, ou
+autrement dit, des variables qui caractérisent la réalisation
+des objectifs.
+Ce choix détermine la représentation du mouvement reflétant l'expressivité des 
+mouvements observés.
+Plusieurs solutions dans le choix de l'espace d'apprentissage ont été étudiées.
+
+Dans~\cite{shon05}, il y a deux espaces d'observations: la configuration articulaire d'un humain
+acquise par capture de mouvements, et l'espace articulaire du robot.
+L'espace articulaire de l'humain est nécessaire car l'objectif
+de ces travaux est de réaliser une imitation.
+Un mouvement est généré sur un modèle du robot, et un humain imite ce mouvement.
+La trajectoire articulaire de l'humain est enregistrée gr\^ace à un système de capture
+de mouvements. De cette façon, l'apprentissage porte sur un corpus parallèle
+de trajectoires de l'humain et du robot. L'association entre les trajectoires articulaires
+humaines et robotiques est donc manuelle. 
+
+Dans~\cite{chalodhorn09}, l'espace d'observation est l'espace articulaire du robot.
+L'objectif de ces travaux étant d'effectuer des reconnaissances et des reproductions 
+de mouvements. Pour pouvoir appliquer un algorithme d'apprentissage, 
+une technique de réduction de dimension est appliquée:
+les auteurs proposent une analyse en composantes principales
+non linéaire avec contrainte circulaire. Il s'agit d'une méthode qui généralise
+l'analyse en composantes principales car elle permet d'obtenir les relations dans les deux
+sens entre l'espace de haute dimension et l'espace réduit. La contrainte circulaire permet
+d'adapter la technique aux courbes fermées.
+En ne considérant que l'espace articulaire,
+la sémantique du mouvement n'est pas explicite: l'exécution d'une t\^ache
+n'est que la conséquence de la reproduction de la trajectoire articulaire. 
+
+Le cas contraire est illustré dans~\cite{herzog08}.
+Les travaux se focalisent sur les mouvements d'un bras droit pour 
+des gestes d'atteintes d'objets.
+L'objectif étant d'effectuer la reconnaissance et l'imitation de mouvements d'atteintes
+effectués par un humain sur un robot humanoïde.
+L'espace d'observation est ici composé des trajectoires dans l'espace cartésiens
+de points associés à chaque articulation (épaule, coude, pouce, doigt, poing).
+Le choix de cet espace d'observation donne une interprétation aux mouvements considérés.
+Les déplacements de ces points sont mis à l'échelle du robot, puis sont utilisés
+pour le calcul des trajectoires articulaires
+que le robot doit exécuter pour imiter un mouvement. Ainsi
+l'algorithme d'apprentissage peut associer le mouvement du bras humain 
+au mouvement du bras du robot.
+D'une manière similaire, les positions, vitesses et accélérations d'un effecteur sont
+observées dans~\cite{hersch08} pour généraliser et reproduire des mouvements.
+Les mouvements de démonstrations sont appliqués directement sur le robot par un opérateur.
+Des informations de visions sont utilisées pour généraliser les mouvements appris à
+d'autres conditions initiales et gérer les perturbations.
+
+Dans \cite{montecillo10}, les positions et orientations
+de la tête, des mains, des pieds et du torse d'un humain sont observées. 
+Ces positions sont transposées à un robot humanoïde 
+pour reproduire le mouvement de l'humain en temps réel.
+Toutes les trajectoires de t\^aches sont imitées sans faire
+la distinction des mouvements pertinents ou non.
+
+L'espace d'observation considéré dans~\cite{billard03}, est l'union de l'espace articulaire
+d'un bras humain, et des positions dans l'espace cartésien d'objets à manipuler.
+Dans~\cite{billard06, calinon07a, kwon08, eppner09}, l'espace articulaire et les positions
+absolues et relatives entre les effecteurs et les objets à manipuler dans l'environnement sont utilisés
+comme observations.
+Ces espaces permettent de représenter d'une manière plus explicite,
+les t\^aches effectuées puisque l'ajout des positions cartésiennes des éléments
+permet de spécifier qu'il n'y a pas que les trajectoires articulaires
+qui sont importantes dans le mouvement:  les déplacements des objets et des effecteurs
+sont caractéristiques du mouvement. L'espace d'observation est donc spécialisé pour un certain
+type d'activité.
+Les variations de l'environnement seront prises en compte dans l'apprentissage
+pour extraire des descriptions génériques des mouvements démontrés.
+Dans~\cite{gribovskaya11}, l'apprentissage se base sur les vitesses et les forces
+afin de se spécialiser au contexte de l'interaction physique avec un humain.
+
+Dans tous les travaux présentés, le choix des espaces d'observations est directement lié
+à la nature des mouvements. La spécialisation des espaces permet 
+de décrire (et donc de reconnaître) plus efficacement les mouvements.
+Notre approche consiste à généraliser la spécialisation 
+en considérant tous les espaces dans lesquels une t\^ache
+peut être exécutée.
+
+\section{Reconnaissance du mouvement}
+La reconnaissance du mouvement est un problème pouvant s'appliquer à de nombreux domaines
+comme la vision ou l'interaction homme-machine et s'intègre naturellement aux applications d'imitations.
+Dans le cas des mouvements humains, la reconnaissance peut porter sur plusieurs niveaux. 
+Il peut s'agir de suivre un humain, d'estimer sa configuration articulaire,
+reconnaître l'identité d'un humain en se basant sur ses mouvements ou encore interpréter 
+ses actions et ses comportements.
+Une revue complète et générale de l'analyse de mouvements
+humains est présentée dans~\cite{moeslund06}.
+Une autre synthèse des travaux sur la reconnaissance de l'action
+exécutée dans un mouvement est présentée dans~\cite{krueger07}.
+
+L'étude des mouvements et des t\^aches en biomécanique a amené au développement 
+de la théorie des \emph{variétés non contrôlées}~\cite{scholz99}.
+Pendant la réalisation d'une t\^ache, les degrés de liberté contribuant à la t\^ache d'un humain
+seraient classés dans deux catégories: d'une part les degrés de liberté 
+qui sont contrôlés par le système nerveux et d'autre part ceux qui ne le sont pas.
+Les variables sont considérées comme étant contrôlées si elles sont stabilisées.
+%La mesure de l'accomplissement d'une t\^ache est alors définie par un ratio
+%de variance dans deux sous-espaces: le sous-espace non contrôlé et son sous-espace orthogonal.
+%Une grande variabilité dans le sous-espace des degrés de liberté
+%non contrôlé n'affecte pas les performances tandis
+%qu'une grande variabilité dans son sous-espace orthogonal dégrade les performances.
+Dans~\cite{jacquierbret09}, la théorie des variétés non contrôlées est appliquée
+pour l'étude de mouvements d'atteintes d'un humain en présence d'un obstacle qui va
+matérialiser des contraintes spatiales.
+L'objectif est de comprendre comment le système nerveux central gère la redondance du bras pour une t\^ache 
+d'atteinte en fonction de la présence ou non d'un obstacle. Les différentes 
+expérimentations menées renforcent l'hypothèse selon laquelle le système nerveux central
+adapte les synergies entre les différents degrés de liberté du bras en fonction
+des contraintes spatiales (ici des obstacles) et des objectifs.
+On peut noter la similitude entre les variétés non contrôlées et leurs sous-espaces
+orthogonals avec le formalisme de la pile de t\^aches présenté dans le chapitre~\ref{chap:sot}. 
+
+\subsection{Classification de mouvements}
+Le problème de reconnaissance d'action peut se formuler comme un problème de classification.
+Dans les travaux en vision présentés dans \cite{chan07}, 
+des mouvements humains, issus de séquences d'images, sont classés pour dégager des comportements distincts
+en utilisant des informations contextuelles aux mouvements du corps.
+Ces informations sont inspirées de la biomécanique et sont
+modélisées par un système de connaissance, à base de règles floues qui sont
+appliquées aux trajectoires articulaires d'un humain.  Par
+exemple, pour un mouvement de marche, les deux bras ne doivent pas être
+en même temps devant le torse. Les classes de mouvements considérées sont 
+la course et la marche. Elles correspondent à des comportements humains.
+L'inconvénient majeur de la méthode est qu'il est difficile de trouver et de formuler
+les règles qui définissent une classe de mouvements. Il est aussi 
+difficile de gérer le grand nombre de règles si on accumule
+tous les comportements.
+
+Peu de techniques sont développées pour la reconnaissance d'actions simultanées.
+La méthode présentée dans~\cite{mori02} est dédiée aux actions humaines simultanées.
+Encore une fois, le défaut majeur de cette méthode est qu'une action est représentée 
+par un ensemble d'heuristiques sélectionnées manuellement.
+Par exemple, pour qu'une action appartienne à la classe \emph{levé de main},
+le mouvement doit respecter deux règles: la position de la main doit être au
+dessus d'un certain seuil, et la main doit se déplacer de bas en haut.
+Toutes les heuristiques sont appliquées au mouvement observé pour dégager l'ensemble
+des actions exécutées.
+
+D'autres types de classes peuvent être considérés comme dans~\cite{drumwright03, jenkins04}. Ces classes
+sont focalisées sur des classes sémantiques (un direct, un crochet, un uppercut, une garde).
+Chaque classe est représentée par des exemples de trajectoires articulaires qui 
+vont créer un espace par balayage.
+Un classificateur bayesien est utilisé pour calculer la probabilité qu'un mouvement appartienne à une
+classe particulière sur des trajectoires articulaires observées, en se basant sur les
+espaces de chacune des classes sémantiques.
+Des sous-espaces articulaires sont utilisés comme critères de classification
+de pas de danse dans~\cite{campbell95}.
+
+La classification présentée dans~\cite{kulic08} est une classification adaptative en ligne. Les classes évoluent
+au fur et à mesure des observations. Chaque mouvement observé est encodé sous la forme d'une chaîne
+de Markov cachée pour être classé.
+Dans~\cite{takano05}, les classes de mouvements se basent sur les paramètres des modèles
+de Markov cachés encodant les mouvements.
+
+\subsection{Segmentation temporelle}
+La segmentation temporelle de mouvements est utilisée pour définir la succession
+de mouvements unitaires ou primitifs dans un mouvement observé. L'outil le
+plus utilisé dans ce domaine est le modèle de Markov caché.
+Cet outil a surtout été appliqué dans le domaine de la reconnaissance 
+de parole~\cite{rabiner89}. Mais ses propriétés mathématiques
+permettent de l'utiliser pour modéliser des données séquentielles génériques, dont le mouvement.
+
+La segmentation de données de capture de mouvements est étudiée dans~\cite{barbic04}.
+La segmentation est de haut niveau: chaque segment unitaire représente 
+un comportement (marcher, courir, frapper\ldots). Trois approches y sont évaluées
+en se basant sur les dimensions obtenues par analyse en composantes principales,
+puis en se basant sur une analyse en composantes principales associée à un modèle probabiliste~\cite{tipping99} 
+et enfin en utilisant des mélanges de modèles gaussiens.
+
+Des techniques très simples sont considérées dans~\cite{field08} pour la segmentation
+de mouvements. Celles-ci se basent sur les accélérations des corps en mouvement, les changements de directions
+(les points où la vitesse devient nulle)
+et les analyses en composantes principales probabilistes.
+En animation, dans le cadre des bases de données de mouvements,
+la segmentation automatique de mouvements peut être utilisée
+pour annoter automatiquement des mouvements et retrouver certains types de motifs de mouvements~\cite{so06, beaudoin08}.
+Dans le même domaine, une segmentation de mouvements est réalisée en recherchant les 
+postures clefs menant à des changements de direction significatifs~\cite{so05}.
+
+Dans~\cite{kulic08a}, la segmentation d'un flux
+de données représentant des mouvements humains, se fait en ligne contrairement à la plupart
+des méthodes de segmentations. En effet, il est important que l'apprentissage puisse se faire en ligne
+afin de pouvoir tenir compte de la présence d'humains dans l'environnement du robot.
+De plus l'approche est incrémentale et permet de
+prendre en compte les mouvements déjà appris ou appris manuellement dans 
+la segmentation. Cette segmentation se base sur des propriétés des vitesses angulaires des articulations.
+Dans~\cite{chalodhorn09}, la segmentation est également effectuée en ligne, 
+et se base sur la projection des données observées
+dans un espace réduit. Un nouveau segment est créé lorsque les nouveaux points projetés ne correspondent
+plus au modèle de prédiction de l'espace courant. Les différents segments représentent
+des phases de marches (marche avant, pas sur le côté, virage).
+Cette approche ressemble à notre méthode de reconnaissance de t\^ache présentée
+dans le chapitre~\ref{chap:reco}, dans le sens où 
+les données observées sont comparées dans un espace approprié à des comportements attendus.
+La différence est que les espaces que l'on considère sont traités de manière parallèle
+et sont directement liés à la sémantique du mouvement.
+
+\section{Génération de mouvements}
+L'étape finale en imitation est la génération du mouvement à partir
+de la représentation des mouvements reconnus. Les primitives moteurs
+permettent d'exprimer le contrôle dans un espace de dimension
+inférieure à l'espace articulaire. En combinant
+les primitives, il est alors possible d'obtenir une 
+grande expressivité pour les mouvements générés. Les primitives
+peuvent être tirées d'un système dynamique, et peuvent être
+modifiées et commutées en ligne~\cite{degallier08}.
+Dans~\cite{sugihara05}, les mouvements sont générés en connectant
+par une fonction lisse et continue, une posture clef et la posture courante.
+Le mouvement généré tient compte des contraintes dynamiques du robot
+et la trajectoire du centre de gravité du robot est recalculée.
+
+Dans~\cite{drumwright03} à la manière de~\cite{rose98},
+le mouvement est généré en interpolant des exemples appartenant à une classe de mouvements.
+Dans~\cite{calinon07a}, des mouvements sont généralisés par 
+mélanges de gaussiennes, puis un mouvement est généré par optimisation
+d'une fonction de mesure d'imitation. Cette phase d'optimisation
+permet d'adapter le mouvement au contexte courant.
+
+Bien que la technique de réduction de dimension utilisée dans~\cite{chalodhorn09} permette
+d'obtenir directement des trajectoires articulaires gr\^ace à la connaissance des relations dans les deux
+sens entre l'espace de haute dimension et l'espace réduit, une perte de précision
+est possible à cause du processus d'encodage et décodage.
+Ainsi l'application du mouvement sur le robot ne garantit aucune stabilité. C'est pour 
+cette raison que le mouvement généré est ajusté par optimisation d'une fonction de coût
+représentant des valeurs capteurs attendues en fonction de l'état du robot 
+dans l'espace réduit. 
+

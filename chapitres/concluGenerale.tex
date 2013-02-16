@@ -1,0 +1,128 @@
+Les travaux présentés dans cette thèse ont portés
+sur la reconnaissance de tâches qu'effectuent un système anthropomorphe.
+Nous avons d'abord présenté les fondements sur lesquels reposent nos
+travaux: le formalisme de la fonction de t\^aches.
+Ce formalisme permet d'exprimer intuitivement des commandes pour un 
+robot en décrivant l'objectif dans un espace approprié. Nous avons également donné
+des exemples typiques de t\^aches robotiques exprimées
+dans ce formalisme. La génération de mouvements est effectuée en construisant une pile
+de t\^aches rangées par ordre de priorités.
+Les t\^aches 
+de haute priorité ne sont pas perturbées par
+des t\^aches de priorités inférieures.
+
+Les techniques utilisées pour acquérir des mouvements ont été présentées.
+Ces techniques sont applicables aussi bien sur un robot que sur un humain.
+Aussi nous avons donné un exemple d'une méthode générique pour reproduire 
+un comportement humain sur un robot en utilisant les mécanismes de contrôle
+de robot présentés précedemment.
+
+Enfin, nous avons montré qu'en se plaçant directement dans l'espace dans lequel 
+une tâche est exprimée, il est possible d'utiliser le modèle
+de génération de mouvement comme un modèle de prédiction en résolvant
+un problème d'optimisation. Le résidu du problème d'optimisation
+produit une mesure d'adéquation entre un mouvement observé et
+une loi de génération de mouvements. Ainsi
+en supposant que les modèles de générations de mouvements et que les tâches
+pouvant intervenir dans un mouvement sont connus et 
+qu'aucune tâche ne change d'état (active, inactive) durant le mouvement observé, il est possible 
+de reconstruire la pile de t\^aches ayant généré ce mouvement.
+
+%une sémantique aux mouvements consid\'er\'es.
+%Cependant, on ne s'est limit\'e qu'\`a faire de la reconnaissance
+%dans des segments temporels dans lesquels les
+%t\^aches mises en jeu restent dans le m\^eme \'etat.
+%Par la suite, la gestion de s\'equence de t\^aches pourrait \^etre
+%\'etudi\'e.
+%Les travaux pr\'eliminaires sur la reconnaissance de t\^aches humaines
+%pr\'esentent des r\'esultats prometteurs.
+
+\section*{Contributions}
+\subsection*{Capture de mouvements}
+Dans le cadre de l'acquisition de mouvements, il était nécessaire d'observer, de manière externe au robot,
+les trajectoires articulaires du robot à partir d'un système de capture de mouvements.
+Ainsi, un programme de recallage de modèle par optimisation
+a été développé. Le mouvement du squelette défini par la configuration géométrique
+des points suivis par la capture de mouvements est transféré au modèle
+du robot HRP-2.
+Ce programme a aussi été utilisé 
+dans les travaux d'éditions de mouvements dynamiques de l'équipe dans lesquels 
+les mouvements sont montrés par un humain. Les mouvements obtenus
+sont transposés au robot pour donner une première trajectoire articulaire.
+Cette trajectoire articulaire est ensuite modifiée en utilisant
+des t\^aches afin de corriger les erreurs introduites par le changement de modèle et 
+d'adapter la dynamique du mouvement aux contraintes physiques du robot.
+
+\subsection*{Génération de mouvements d'attente}
+Pour la génération de mouvements d'attente, un module logiciel a été
+créé pour assigner les lots de trajectoires mesurées par capture de mouvements
+aux trajectoires de références des t\^aches. Les mouvements
+générés ont été utilisés pour \emph{donner une impression de vie} au robot
+HRP-2 durant une démonstration publique du robot.
+
+\subsection*{Reconnaissance de t\^aches}
+Une méthode de reconnaissance de mouvements capable de détecter 
+des t\^aches effectuées en parallèle et possédant éventuellement
+des couplages a été développée. Cette méthode s'appuie
+sur des opérateurs de projection dans les espaces des t\^aches et leurs 
+espaces orthogonaux pour d'une part projeter les mouvements à analyser
+dans des espaces caractéristiques d'une t\^ache et d'autre part
+pour annuler et découpler les t\^aches détectées.
+La méthode de la reconnaissance de t\^aches a été implémentée
+en utilisant les différentes librairies développées
+en collaboration par l'équipe Gepetto au LAAS-CNRS Toulouse et le JRL Tsukuba.
+
+\section*{Perspectives}
+En ce qui concerne la reconnaissance de t\^aches,
+les perspectives envisagées sont réliées aux limites
+de la méthode. La reconnaissance ne s'applique que sur des segments
+temporels dans lesquels les t\^aches mises en jeu ne changent pas d'état.
+Ainsi il est envisageable d'ajouter des paramètres de temporels représentant le
+début et la fin d'une t\^ache dans le problème 
+d'optimisation des paramètres du modèle de génération de mouvements pour détecter
+ces changements d'états.
+L'étape qui suit logiquement est la reconnaissance de séquence de pile de t\^aches.
+Un apprentissage des transitions entre les différentes instances 
+de pile de t\^aches pourra être réalisé afin de construire des graphes 
+de mouvements offrant une grande réactivité pour la reconnaissance et la 
+reproduction.
+
+D'autre part, le formalisme de la fonction de t\^aches
+s'étend très bien en dynamique: notre méthode de reconnaissance pourra
+être appliquée à des t\^aches dynamiques.
+Toutes les propriétés de la fonction de t\^aches sont 
+conservées. Seuls les modèles de génération et les espaces d'observation diffèrent.
+Il semble donc immédiat d'adapter l'approche à la dynamique.\\
+
+Nous avons donné une définition d'une t\^ache robotique.
+Cette définition est accompagnée d'outils et de propriétés
+puissantes qui nous ont permis de projeter des trajectoires
+dans des espaces spécialisés où la reconnaissance est plus
+facile. Mais est-il possible d'utiliser les mêmes concepts
+sur un humain ou de définir d'une manière similaire des t\^aches
+humaines? 
+
+L'étude du mouvement d'attente nous a amené à réfléchir
+sur ce qui caractérise un mouvement ou un comportement.
+La méthode utilisée pour reproduire le mouvement
+d'attente est très pragmatique: les trajectoires associées 
+à certains membres sont reproduites.
+L'évaluation du succès d'une imitation d'action 
+est immédiate: si l'action à reproduire consiste à déplacer un objet
+à un endroit donné, alors la position finale de l'objet
+après l'imitation permet de valider le mouvement effectué.
+En revanche il n'y a aucun critère objectif permettant de valider
+le succès de l'imitation du mouvement d'attente.
+Lorsqu'un humain est debout et attend,
+des mouvements inconscients apparaissent: le regard
+est mobile, la respiration entraîne des mouvements au niveau
+du torse. Il n'est pas naturel de rester immobile.
+L'exemple des statues vivantes le montre bien, puisque
+de gros efforts physiques et de concentration sont nécessaires
+pour contrôler sa respiration, retirer toutes les tensions inutiles, maintenir une 
+posture constante et se décaler subtilement
+lorsque l'attention du spectateur baisse
+pour se dégourdir. Dans les deux cas, on peut considérer que l'humain \emph{ne fait rien}.
+Cette étude de ce qu'est un modèle générique d'action trouverait une simplification immédiate
+en introduisant des méthodes d'apprentissage automatique pour synthétiser plusieurs
+démonstrations succéssives en un seul modèle numérique.

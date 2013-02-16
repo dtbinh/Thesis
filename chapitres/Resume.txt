@@ -1,0 +1,45 @@
+Reconnaissance de tâches par commande inverse
+
+Des méthodes efficaces s'appuyant sur des outils statistiques pour réaliser de
+la reconnaissance de mouvement ont été développé. Ces méthodes reposent sur
+l'apprentissage de primitives situé dans des espaces approprié, par exemple
+l'espace latent de l'espace articulaire et/ou d'espace de tâches adéquat. Les
+primitives apprises sont souvent séquentielle: un mouvement est segmenté selon
+l'axe des temps. Dans le cas d'un robot humanoïde, le mouvement peut être
+décomposé en plusieurs sous-tâches simultanées. Par exemple dans un scénario de
+serveur, le robot doit placer une assiette sur la table avec une main tout en
+maintenant son plateau horizontal avec son autre main. La reconnaissance ne
+peut donc pas se limiter à une seule et unique tâche par segment de temps
+consécutif. La méthode présenté dans ces travaux utilise la connaissance des
+tâches que le robot est capable d'accomplir, ainsi que des contrôleurs qui
+génèreront les mouvements  pour réaliser une rétro ingénierie sur un mouvement
+observé. Cette analyse est destiné à reconnaître des tâches qui ont été exécuté
+de manière simultanées. La méthode repose sur la fonction de tâche et les
+projection dans l'espace nul des tâches afin de découpler les contrôleurs.
+L'approche a été appliqué avec succès sur un vrai robot pour distinguer des
+mouvements visuellement très proches, mais sémantiquement différents. 
+
+Mots-clefs: Analyse de mouvements, pile de tâches, robotique
+
+
+Task recognition by reverse control
+
+Efficient methods to perform motion recognition have been developed using
+statistical tools. Those methods rely on primitives learning in a suitable
+space, for example the latent space of the joint angle and/or adequate task
+spaces. The learned primitives are often sequential : a motion is segmented
+according to the time axis. When working with a humanoid robot, a motion can be
+decomposed into simultaneous sub-tasks. For example in a waiter scenario, the
+robot has to keep some plates horizontal with one of his arms, while placing a
+plate on the table with its free hand. Recognition can thus not be limited to
+one task per consecutive segment of time. The method presented in this work
+takes advantage of the knowledge of what tasks the robot is able to do and how
+the motion is generated from this set of known controllers to perform a reverse
+engineering of an observed motion. This analysis is intended to recognize
+simultaneous tasks that have been used to generate a motion. The method relies
+on the task-function formalism and the projection operation into the null space
+of a task to decouple the controllers. The approach is successfully applied on
+a real robot to disambiguate motion in different scenarios where two motions
+look similar but have different purposes.
+
+Keywords: Motion analysis, stack of tasks, robotics

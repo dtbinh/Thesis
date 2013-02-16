@@ -1,0 +1,252 @@
+%\documentclass[12pt,draft]{article}
+\documentclass[10pt]{article}
+%% En 12pt c'est possible aussi
+
+
+%-----------------------------------------------------------------------------%
+% New command 								      %
+% ----------------------------------------------------------------------------%
+%\newcommand{\TODO}[1]{\textcolor{red}{\begin{Large}{#1}\end{Large}}} 
+\newcommand{\TODO}[1]{ \textcolor{red}{ \textbf{ #1 } } } 
+
+
+% ---------------------------------------------------------------------------- %
+% --- PACKAGE ---------------------------------------------------------------- %
+% ---------------------------------------------------------------------------- %
+\usepackage{color}
+\RequirePackage{latexsym} % anciens symboles latex
+\RequirePackage{makeidx}
+\RequirePackage{calc}
+\RequirePackage{ifthen}
+\RequirePackage{float}
+\RequirePackage[frenchb]{babel}
+\usepackage{multicol}
+\usepackage{amsmath}
+
+\begin{document}
+
+\tableofcontents
+% ---------------------------------------------------------------------------- %
+% --- CHAPITRES -------------------------------------------------------------- %
+% ---------------------------------------------------------------------------- %
+
+ \section*{Introduction G\'en\'erale}
+Introduction g\'n\'rale sur la robotique. Pourquoi \'etudier le mouvement,
+les intentions du robot, interaction homme robots.
+
+\section{Etat de l'art}
+\label{chap:basics:sec:introEda}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Ce chapitre pr\'esente un \'etat de l'art sur les principes et technologies
+employ\'ees durant les travaux qui seront pr\'esent\'es.
+Tout d'abord, comment observer un mouvement.
+Ensuite quelles m\'ethodes peuvent \^etre utilis\'ee pour la reconnaissance d'actions.
+Comment faire de l'imitation sans reconnaissance.
+Enfin, imitation de d\'emonstrations.
+
+\subsection{Syst\`eme de capture de mouvements}
+Diff\'erents types de syst\`emes de capture de mouvements:
+optique, magn\'etique, marqueurs actifs, passifs.
+
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\subsection{Reconnaissance de mouvement}
+\label{chap:basics:sec:reco}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Techniques utilis\'ees en vision pour faire de la reconnaissance:
+plusieurs niveau: reconnaissance de trajectoire articulaire
+jusqu'\`a reconnaissance d'action comme par exemple reconna\^itre un \emph{crochet}.
+
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\subsection{Imitation de mouvement sans reconnaissance}
+\label{chap:basics:sec:mocap}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Comment faire \'ex\'ecuter un mouvement au robot directement \`a partir
+d'une d\'emonstration. Aucun aspect du mouvement ne sera pas
+r\'epliqu\'e.
+
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\subsection{Programmation par d\'emonstration}
+\label{chap:basics:sec:mocap}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Comment programmer des mouvements \`a appliquer au robot
+\`a partir de d\'emonstrations. Typiquement les approches statistiques,
+avec apprentissage.
+
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\subsection*{Conclusion}
+\label{chap:basics:sec:conclusion}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Conclusion sur l'\'etat de l'art. Faiblesse des approches statistiques,
+manque de parall\'elisme.
+
+
+\section{Probl\'ematique}
+\label{chap:2:sec:intro}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Compr\'ehension du mouvement du robot. Comment reproduire un mouvement 
+d\'estructur\'e. Comment utiliser l'outil de g\'en\'eration
+de mouvements pour effectuer de la reconnaissance avec un certain
+niveau s\'emantique. Traiter le cas des t\^aches \'ex\'ecut\'ees
+en parall\`ele.
+ 
+\section{Pile de t\^aches}
+\label{chap:3:sec:intro}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Etat de l'art et pr\'esentation de la pile de t\^aches.
+\subsection*{Conclusion}
+
+Nous avons d\'ecrit le formalisme de la fonction de t\^aches. Nous allons 
+utiliser ces outils pour faire de la reconnaissance.
+
+\section{Imitation sans reconnaissance}
+\label{chap:4:sec:intro}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Pour imiter un mouvement non structur\'e,
+la reconnaissance n'a pas de sens. Pourtant ce type de mouvement
+peut avoir un int\'eret. Ce chapitre pr\'esente une m\'ethode
+pour appliquer au robot un mouvement d'attente.
+
+\subsection{M\'ethode}
+\label{chap:basics:sec:activeWaitMethode}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Description de la m\'ethode pour effectuer un mouvement non structur\'e.
+Enregistrement de donn\'ees de capture de mouvements. Puis
+utilisation de la pile de t\^aches pour l'\'ex\'ecution sur le robot.
+
+\subsection{Mouvement d'attente active}
+\label{chap:basics:sec:activeWait}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Un exemple de mouvement non structur\'e, l'attente.
+Il s'agit d'appuyer la pr\'esence du robot. Par exemple
+entre deux d\'emonstration scientifique.
+\subsection*{Conclusion}
+
+Nous avons montr\'e une mani\`ere pour reproduire 
+des mouvements non structur\'e.
+
+\section{Reconnaissance de t\^ache en robotique}
+\label{chap:5:sec:intro}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Ce chapitre pr\'esente une m\'ethode exploitant les 
+outils du formalisme de la fonction de t\^ache pour
+effectuer de la reconnaissance de t\^ache. La m\'ethode
+repose sur une analyse du mouvement semblable \`a de
+la r\'etro-ing\'enierie.
+
+\subsection{M\'ethode}
+\label{chap:basics:sec:taskReco}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Cette section pr\'esente la m\'ethode utilis\'e
+pour analyser une trajectoire articulaire afin
+d'en d\'eduire les t\^aches qui ont \'et\'e utilis\'ees
+pour g\'en\'erer ce mouvement. Cette m\'ethode s'appuie sur
+les m\'ecanismes de la fonction de t\^aches pour d\'ecoupler
+les diff\'erentes t\^aches impliqu\'ees dans le mouvement.
+\subsection{Exp\'erimentation sur le robot}
+\label{chap:basics:sec:xpRobot}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Pour valider la m\'ethode, plusieurs exp\'erimentations
+on \'et\'e effectu\'ees sur le robot HRP-2 en simulation
+et sur le vrai robot. Ces exp\'erimentations consistent 
+\`a discriminer des paires mouvements visuellement proche, mais 
+faisant intervenir des t\^aches diff\'erentes: les s\'emantiques
+de ces mouvements sont diff\'erentes.
+
+\subsection{Exp\'erimentation sur l'humain}
+\label{chap:basics:sec:xpHumain}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Cette section pr\'esente les premiers travaux effectu\' pour appliquer
+la m\'ethode de reconnaissance de t\^aches \`a l'humain.
+Le choix du comportement de r\'ef\'erence se porte
+sur des trajectoires de type \emph{minimum jerk}.
+\subsection*{Conclusion}
+
+Nous avons valid\'e la m\'ethode pr\'esent\'ee
+gr\^ace \`a plusieurs exp\'erimentations, et avons
+explor\'e la possibilit\'e d'appliquer
+cette m\'ethode \`a l'humain.
+
+\section{Reconnaissance de t\^ache dynamiques}
+\label{chap:6:sec:intro}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Le mecanisme utilis\'e en cin\'ematique est appliqu\'e en
+dynamique.
+\subsection{Pile de t\^aches dynamique}
+\label{chap:basics:sec:sotDyn}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Cette section introduit la pile de t\^aches dynamique.
+\subsection{Imitation sans reconnaissance en dynamique}
+\label{chap:basics:sec:imitDyn}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Cette section pr\'esente un exemple d'application
+de la pile de t\^aches dynamique dans le cadre
+d'une imitation de mouvement sans reconnaissance.
+\subsection{Reconnaissance de t\^aches dynamique}
+\label{chap:basics:sec:recoDyn}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Cette section pr\'esente les r\'esultats obtenus
+pour la reconnaissance de t\^aches dynamique.
+\subsection*{Conclusion}
+
+Nous avons \'etendu la m\'ethode de reconnaissance \`a la dynamique.
+ 
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \section*{Conclusion et perspectives}
+Les travaux pr\'esent\'es permettent d'introduire
+une s\'emantique aux mouvements consid\'er\'es.
+Cependant, on ne s'est limit\'e qu'\`a faire de la reconnaissance
+dans des segments temporels dans lesquels les
+t\^aches mises en jeu restent dans le m\^eme \'etat.
+Par la suite, la gestion de s\'equence de t\^aches pourrait \^etre
+\'etudi\'e.
+Les travaux pr\'eliminaires sur la reconnaissance de t\^aches humaines
+pr\'esentent des r\'esultats prometteurs.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+
+
+\end{document}
+
+
+%<!-- Local IspellDict: francais -->

@@ -1,0 +1,86 @@
+%\section*{Introduction}
+%\label{sec:intro}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\chapter{Pile de t\^aches}
+\label{chap:sot}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+La fonction de t\^ache~\cite{samson91} est une 
+approche élégante pour décrire intuitivement des commandes pour un robot dans un espace
+approprié. Une t\^ache permet donc de relier l'état d'un robot à un espace choisi. 
+On peut alors prédire les mouvements dans l'espace des t\^aches connaissant
+les mouvements du robot (fonction directe) ou bien trouver un mouvement (c'est-à-dire une commande)
+du robot réalisant un objectif donné dans l'espace des t\^aches.
+En se reposant sur la redondance du système, cette approche peut être étendue pour 
+tenir compte d'un ensemble hiérarchisé de t\^aches~\cite{siciliano91}. 
+Il est possible de ranger ces t\^aches sous la forme d'une pile
+afin de construire efficacement une loi de commande générant des mouvements complexes~\cite{baerlocher04, mansard07}. 
+Cette organisation en pile autorise des opérations sur les t\^aches (ajouts, suppressions et permutations)
+qui préservent la continuité de la commande~\cite{keith09}.
+Ce mode de composition offre une véritable versatilité: en effet,
+les t\^aches qui composent une pile sont réutilisables indépendamment,
+et peuvent être modifiées gr\^ace à leurs paramétrages. De plus
+les t\^aches peuvent être exprimées dans les mêmes espaces que les données de
+capteurs, et il est par conséquent facile de suivre l'évolution des t\^aches.
+
+Ce chapitre présente d'abord le problème de la géométrie inverse
+qui consiste à calculer une posture d'un corps poly-articulé en fonction
+d'un objectif dans l'espace cartésien à atteindre. Les principes et les 
+outils permettant de résoudre ce problème ont un lien direct avec la fonction de t\^ache.
+Le formalisme de la fonction de t\^ache sera ensuite introduit, pour finir
+sur la présentation de la pile de t\^aches. Cette pile de t\^aches, gr\^ace à 
+ses propriétés, pourra \^etre utilisée pour générer une loi de commande
+ou effectuer une reconnaissance de mouvements.
+
+%Par la suite, nous considérons que le robot est commandé en vitesse $\mbf{\dot{q}}$,
+%où $\mbf{q}$ est le vecteur de configuration articulaire du robot.                   
+%Une t\^ache est définie par un vecteur
+%$\mbf{e}$ et par un comportement référence $\mbf{\dot{e}^*}$ à éxécuter dans l'espace
+%des t\^aches.
+%La Jacobienne de la t\^ache est notée
+%$\mbf{J}=\dpartial{\mbf{e}}{\mbf{q}}$. 
+%Divers comportements typiques peuvent être choisi pour $\mbf{\dot{e}^*}$. Typiquement,
+%le comportement qui sera utilisé ici est une décroissance exponentielle définie par
+%\begin{equation}
+%  \mbf{\dot{e}^*} = -\lambda\mbf{e}
+%  \label{eq:lambda}
+%\end{equation}
+%où $\mbf{e} = \mbf{s} - \mbf{s^*}$ est l'erreur entre la valeur observée courante
+%$\mbf{s}$ et sa référence $\mbf{s^*}$,
+%et $\lambda>0$ est le gain qui permet d'ajuster la vitesse de régulation de
+%$\mbf{e}$ à $0$.
+%Par exemple, la caractéristique observée peut \^etre une position 3d $\mbf{p}$
+%d'un effecteur du robot, à ramener à une position choisie $\mbf{p^*}$.
+%Dans ce cas, $\mbf{J} = \dpartial{\mbf{p}}{\mbf{q}}$ est la Jacobienne
+%articulaire du robot.
+%
+%La loi de contr\^ole est donnée par la solution aux moindres carrés~\cite{liegeois77}:
+%\begin{equation}
+%\dot{\mbf{q}} = \mbf{J}^+ \mbf{\dot{e}}^* + \mbf{P}\mbf{z}
+%\label{eq:ltsq}
+%\end{equation}
+%où $\mbf{J}^+$ est l'inverse de $\mbf{J}$ au sens des moindres carrés,
+%$\mbf{P} = \mbf{I} - \mbf{J}^+ \mbf{J}$ est l'opérateur de projection dans l'espace nul
+%de $\mbf{J}$ et $\mbf{z}$ est un critère secondaire quelquonque. $\mbf{P}$ assure
+%le découplage de la t\^ache principale et de $\mbf{z}$. 
+%En utilisant $\mbf{z}$ comme une entrée secondaire, la loi de commande peut
+%\^etre étendue recursivement à un ensemble de 
+%\emph{n} t\^aches. Ces \emph{n} t\^aches
+%sont ordonnées par ordre de priorités :
+%la t\^ache d'ordre 1 étant celle de plus haute priorité,
+%et la t\^ache d'ordre \emph{n}, celle de plus basse priorité,
+%une $t\^ache_i$ ne doit pas perturber une $t\^ache_j$ si $i>j$.
+%La formulation récursive de la loi de commande est proposée dans~\cite{siciliano91} :
+%\begin{equation}
+%\dot{\mbf{q}}_i = \dot{\mbf{q}}_{i-1} + (\mbf{J}_i \mbf{P}_{i-1}^{A})^+
+%(\dot{\mbf{e}}^*_i - \mbf{J}_i \dot{\mbf{q}}_{i-1}) , \ \ i = 1 \ldots n
+%\end{equation}
+%\noindent avec $\dot{\mbf{q}}_0 = 0$ et $\mbf{P}_{i-1}^{A}$ est
+%le projecteur dans l'espace nul de la Jacobienne augmentée
+%$\mbf{J}_i^A = (\mbf{J}_1, \ldots \mbf{J}_i)$. La trajectoire des vitesses articulaires
+%réalisant toutes les t\^aches est $\dot{\mbf{q}}^* = \dot{\mbf{q}}_n$.
+%Une implémentation complète de cette approche est proposée dans~\cite{mansard07}
+%sous le nom de \emph{pile de t\^aches} (SoT). 
+%

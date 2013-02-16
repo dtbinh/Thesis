@@ -1,0 +1,1086 @@
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+%\section{Exp\'erimentations: Reconnaissance de mouvements effectués par le robot HRP-2}
+\label{chap:xpRobot}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+
+Pour valider la m\'ethode présentée plus haut, plusieurs exp\'erimentations
+ont \'et\'e effectu\'ees sur le robot HRP-2 en simulation
+et sur le vrai robot. Ces exp\'erimentations consistent 
+\`a discriminer des paires de mouvements visuellement proches, mais 
+faisant intervenir des t\^aches diff\'erentes: les s\'emantiques
+de ces mouvements sont diff\'erentes.
+
+\section{Résultats en simulation: reconnaissance de t\^aches effectuées par le robot HRP-2}
+\label{sec:simu}
+Ce paragraphe détaille une série d'expérimentations effectuées en simulation pour 
+valider l'algorithme de reconnaissance.
+La simulation nous permet d'observer le comportement nominal de l'algorithme
+en absence de bruits issus de capteurs.
+La première expérimentation valide simplement l'étape de projection 
+du mouvement~(paragraphe \ref{sec:prelimValid}). 
+%Fig.~\ref{fig:snapshotXpqdot} and Fig.~\ref{fig:xp3Pqdot} illustrate the effect of the projections.
+La seconde partie réunit un ensemble d'expérimentations qui valide l'algorithme de reconnaissance 
+de t\^aches~(paragraphe \ref{sec:distinc}).
+%Fig.~\ref{fig:XP2RFit} and Fig.~\ref{fig:XP2RLFit} shows how the fitting behaves. 
+%Fig.~\ref{fig:RbeforeAfterProj} shows how a projected trajectory evolves after other projections.
+Pour chaque expérimentation de cet ensemble, l'algorithme de reconnaissance de t\^aches
+est appliqué à deux mouvement visuellement proches:
+ces deux mouvements ont été artificiellement construits pour présenter une
+ambigu\"ité visuelle lorsqu'on les compare entre eux. La présence de cette
+ambiguïté permet d'illustrer l'efficacité de notre algorithme
+vis à vis de la précision de la reconnaissance.
+Tous les mouvements qui ont servis aux expérimentations sont résumés dans le tableau~\ref{tab:motion}.
+La description des t\^aches utilisées pour construire ces mouvements est détaillée ci-dessous.
+
+\subsection{Protocole d'expérimentations}
+Les mouvements de référence ont été générés en utilisant le modèle du robot humanoïde
+HRP-2. Celui-ci présente 30 degrés de liberté actionnés, plus six degrés de liberté 
+pour la base flottante.
+Tous les mouvements démarrent de la configuration de repos \emph{half-sitting} (comme illustrée
+dans la figure~\ref{fig:halfSit}),
+et le centre de masse est situé à zéro dans le repère du bassin lorsque 
+celui-ci est la racine de l'arbre cinématique. Cette configuration a pour particularité de ne pas présenter
+de singularité.
+En cinématique inverse, la position de la base flottante sous-actuée est résolue en contraignant le pied gauche
+à rester sur le sol.
+Les figure~\ref{fig:spotDiff1},~\ref{fig:spotDiff2} et~\ref{fig:spotDiff3} montrent les postures finales
+des mouvements utilisées dans les expérimentations.
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.3\linewidth]{figures/chapitre5/halfSit.ps}
+\end{center}
+\caption[Pose \emph{half-sitting}.]{Tout les mouvements de référence démarrent à partir de la posture de repos \emph{half-sitting}.}
+\label{fig:halfSit}
+\end{figure}
+\begin{figure}[p]
+  \begin{center}
+    \includegraphics[width=0.7\linewidth]{figures/chapitre5/spotDiff.ps}
+  \end{center}
+  \caption[Mouvements d'atteintes.]{Gauche: La posture finale du \emph{mouvement~2.a}; Droite: La posture finale du \emph{mouvement~2.b}.}
+  \label{fig:spotDiff1}
+\end{figure}
+\begin{figure}[p]
+\begin{center}
+\includegraphics[width=0.50\linewidth]{figures/chapitre5/simu/3/final3.ps}
+\end{center}
+\caption[Mouvements prise et prise orientée.]{Gauche: La posture finale du \emph{mouvement~3.a}; Droite: La posture finale du \emph{mouvement~3.b}.
+La différence entre ces deux mouvements est difficile à percevoir: l'orientation de la main droite
+est contrainte à être parallèle au sol dans le \emph{mouvement~3.b}.}
+\label{fig:spotDiff2}
+%\vspace{-3pt}
+\end{figure}
+\begin{figure}[p]
+\begin{center}
+\includegraphics[width=0.50\linewidth]{figures/chapitre5/spotDiff3.ps}
+\end{center}
+\caption[Mouvements de prise orientée et regard.]{Gauche: La posture finale du \emph{mouvement~4.a}; Droite: La posture finale du \emph{mouvement~4.b}.}
+\label{fig:spotDiff3}
+\end{figure}
+
+L'ensemble des t\^aches considérées dans les expérimentations sur HRP-2 est : 
+
+\begin{itemize}
+  \item \emph{Com} : t\^ache~\eqref{eq:taskCom}, le centre de masse du robot est contraint pour maintenir un équilibre statique (3 DDL)
+  \item \emph{Regard} : t\^ache~\eqref{eq:visError}, le robot regarde un point dans l'espace Cartésien, le point de contrôle se situe
+à 25cm au dessus du centre de la dernière articulation du cou (2 DDL)
+  \item \emph{Double support} : t\^ache~\eqref{eq:taskRelative}, la transformation entre le repère attaché au pied droit et le repère 
+  attaché au pied gauche du robot doit être constante (6 DDL)
+  \item \emph{Prise gauche/droite} : t\^ache~\eqref{eq:taskPosition}, un repère attaché à la main gauche ou droite du robot atteint un point défini dans l'espace Cartésien, les points de contrôle se situent aux centres des articulations terminales des bras (3 DDL)
+  \item \emph{Prise orientée} : t\^ache~\eqref{eq:feature6dE}, similaire à la t\^ache de \emph{prise}, mais la position
+    désirée doit \^etre atteinte avec une orientation de la main définie (6 DDL)
+  \item \emph{Tête} : t\^ache~\eqref{eq:feature6dE}, un repère attaché à la t\^ete du robot est contrainte en position et en orientation, le point de contrôle se situe au centre de la dernière articulation de la tête (6 DDL) 
+  \item \emph{Torse} : t\^ache~\eqref{eq:taskRotation}, un repère attaché au torse du robot est contraint en orientation, le point de contrôle se situe au centre de la dernière articulation associée au torse (3 DDL)
+\end{itemize}
+\begin{table}[h]
+  \centering
+    \begin{tabular}{|c|c|c|}
+      \hline
+      & (a) & (b) \\
+      \hline
+      & &
+      \\
+      Mouvement 1 & 
+	\begin{tabular}{|c|}
+          \hline
+          \emph{Prise droite}\\
+          \hline
+          \emph{Prise gauche}\\
+          \hline
+          \emph{Regard}\\
+	  \hline
+	  \emph{Com}\\
+	  \hline
+	  \emph{Double support}\\
+	  \hline
+	\end{tabular} & \\
+      & &
+      \\
+      \hline
+      & &
+      \\
+      Mouvement 2 & 
+        \begin{tabular}{|c|}
+          \hline
+          \emph{Prise droite}\\
+	  \hline
+	  \emph{Com}\\
+	  \hline
+	  \emph{Double support}\\
+	  \hline
+	\end{tabular}  
+    &
+	\begin{tabular}{|c|}
+	  \hline
+	  \emph{Prise gauche}\\
+	  \hline
+	  \emph{Prise droite}\\
+	  \hline
+	  \emph{Com}\\
+	  \hline
+	  \emph{Double support}\\
+	  \hline
+	\end{tabular}  
+    \\
+    & &
+    \\
+    \hline
+    & &
+    \\
+    Mouvement 3 & 
+        \begin{tabular}{|c|}
+	  \hline
+	  \emph{Regard}\\
+	  \hline
+	  \emph{Prise droite}\\
+	  \hline
+	  \emph{Com}\\
+	  \hline
+	  \emph{Double support}\\
+          \hline
+        \end{tabular}  
+    &
+	\begin{tabular}{|c|}
+	  \hline
+	  \emph{Regard}\\
+	  \hline
+	  \emph{Prise orientée droite}\\
+	  \hline
+	  \emph{Com}\\
+	  \hline
+	  \emph{Double support}\\
+	  \hline
+	\end{tabular}  
+    \\
+    & &
+    \\
+    \hline
+    & &
+    \\
+    Mouvement 4 & 
+	\begin{tabular}{|c|}
+	  \hline
+	  \emph{Regard}\\
+	  \hline
+	  \emph{Com}\\
+	  \hline
+	  \emph{Double support}\\
+	  \hline
+	\end{tabular}  
+    &
+	\begin{tabular}{|c|}
+	  \hline
+	  \emph{Prise orienté gauche}\\
+	  \hline
+	  \emph{Com}\\
+	  \hline
+	  \emph{Double support}\\
+	  \hline
+	\end{tabular} 
+      \\
+    & &
+    \\
+    \hline
+    & &
+    \\
+    Mouvement 5 &
+    \begin{tabular}{|c|}
+      \hline
+      \emph{Prise droite}\\
+      \hline
+      \emph{Regard}\\
+      \hline
+      \emph{Com}\\
+      \hline
+      \emph{Double support}\\
+      \hline
+    \end{tabular}
+    &
+    \begin{tabular}{|c|}
+      \hline
+      \emph{Prise droite}\\
+      \hline
+      \emph{Torse}\\
+      \hline
+      \emph{Com}\\
+      \hline
+      \emph{Double support}\\
+      \hline
+    \end{tabular}
+    \\
+    & &
+    \\
+    \hline
+  \end{tabular}
+  \caption{Tableau des mouvements et des t\^aches considérés.}
+  \label{tab:motion}
+\end{table}
+
+\FloatBarrier
+\subsection{Expérimentation 1 : Validation préliminaire}
+\label{sec:prelimValid}
+Dans cette expérimentation, un mouvement de base est généré.
+La reconnaissance de t\^ache par ajustement et le critère d'arrêt de l'algorithme sont validés ici.
+Le mouvement de référence est le \emph{mouvement~1.a} (voir le tableau~\ref{tab:motion}).
+Le mouvement est donné au programme de détection qui va sélectionner
+les t\^aches qui correspondent le mieux par optimisation.
+
+La figure~\ref{fig:snapshotXpqdot} montre des vignettes du mouvement original
+et du mouvement résultant des projections successives dans les espaces
+nuls des t\^aches détectées:
+\emph{prise droite}, \emph{com}, \emph{regard}, \emph{double support} et \emph{prise gauche}.
+Le mouvement initial est visualisé en intégrant un champs de vecteurs. Les
+projections dans les espaces nuls vont modifier ces vecteurs que l'on intègre pour visualiser
+les mouvements projetés. Ces mouvements projetés n'ont donc pas 
+de sens physique et seule la quantité de mouvements reste valide.
+Ces quantités de mouvements permettent d'avoir une bonne
+intuition sur les effets des projections dans les espaces nuls.
+Chaque projection annule une partie du mouvement, et le mouvement du robot devient nul quand 
+toutes les projections sont appliquées, ce qui signifie que toutes les t\^aches
+intervenant dans le mouvement ont été détectées.
+\begin{figure*}[p]
+\centering
+\begin{tabular}{c@{}c@{}c@{}c@{}c@{}c@{}c}
+(a)&
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot0_0.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot0_99.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot0_199.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot0_299.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot0_399.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot0_499.png.ps}}\\
+
+(b)&
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot1_0.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot1_99.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot1_199.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot1_299.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot1_399.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot1_499.png.ps}}\\
+
+(c)&
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot2_0.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot2_99.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot2_199.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot2_299.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot2_399.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot2_499.png.ps}}\\
+
+(d)&
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot3_0.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot3_99.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot3_199.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot3_299.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot3_399.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot3_499.png.ps}}\\
+
+(e)&
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot4_0.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot4_99.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot4_199.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot4_299.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot4_399.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot4_499.png.ps}}\\
+
+(f)&
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot5_0.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot5_99.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot5_199.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot5_299.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot5_399.png.ps}} &
+\parbox[c]{2.2cm}{\includegraphics[width=\linewidth]{figures/chapitre5/Pqdot5_499.png.ps}}\\
+\\
+Itération & 0 & 99 & 199 & 299 & 399 & 499\\
+\end{tabular}
+\caption[Illustrations des projections successives.]{Le mouvement généré par une pile de t\^aches contenant :
+\emph{Prise droite}, \emph{Prise gauche}, \emph{Com}, \emph{Regard}, \emph{Double support} 
+est représenté dans la ligne (a).
+Les autres lignes représentent les projections successives du mouvement dans les espaces
+nuls des t\^aches: (b) Prise droite, (c) Com, (d) Regard, (e) Double support, (f) Prise gauche.}
+\label{fig:snapshotXpqdot}
+\end{figure*}
+Comme nous pouvons le constater dans la seconde ligne, le mouvement de la main droite est annulé.
+L'annulation de \emph{com} à partir de la troisième ligne est plus difficile à percevoir.
+On peut noter la modification du mouvement des jambes. Cette modification correspond au fait que pour
+exécuter la t\^ache \emph{Com}, le robot utilise ses jambes.
+À la quatrième ligne, l'annulation du mouvement de la t\^ete est très claire.
+On note que le mouvement du torse est altéré. Le mouvement du torse est donc justifié par
+la t\^ache de regard.
+À la cinquième
+ligne, l'annulation de la t\^ache \emph{double support} supprime la compensation
+faite avec le pied droit. Enfin, comme on peut le voir dans la dernière ligne,
+l'annulation de toutes les t\^aches mène à un mouvement nul.
+Tous les mouvements du robot ont donc été justifiés.
+La figure~\ref{fig:xp3Pqdot} montre l'évolution de la norme du mouvement,
+définie par la somme des normes au carré sur le temps de la trajectoire articulaire du robot.
+\begin{figure}[t]
+\begin{center}
+%\includegraphics[height=0.9\linewidth, angle = -90]{figures/chapitre5/PqdotNorms.ps}
+\resizebox{.48\textwidth}{!} {
+      \input{figures/chapitre5/PqdotNormsProjection.tex}
+    }
+\end{center}
+\caption[Évolution de la norme du mouvement.]{L'évolution de la norme du mouvement après avoir projeté successivement le mouvement dans les
+	espaces nuls des t\^aches.}
+\label{fig:xp3Pqdot}
+\end{figure}
+Chaque projection fait strictement décroître la norme de la vitesse
+(\ie~la quantité de mouvement). Après cinq projections, le mouvement est complètement
+annulé, ce qui confirme que toutes les t\^aches actives ont été découvertes. L'algorithme
+s'arrête donc.
+\FloatBarrier
+
+\subsection{Expérimentation 2 : Distinction entre deux mouvements proches}
+\label{sec:distinc}
+En ce qui concerne la détection de mouvement, \^etre capable
+de différencier deux mouvements visuellement proches faisant tout de même
+intervenir des t\^aches différentes est un problème intéressant.
+Les algorithmes pour les systèmes anthropomorphes utilisent plut\^ot le contexte
+pour la desambigüisation.
+Le travail présenté ici montre que le critère d'ajustement mêlé à la représentation
+du mouvement sous forme de pile de t\^aches est suffisant pour distinguer des mouvements visuellement
+proches. Trois paires de mouvements ambigus vont \^etre présentées pour illustrer 
+la capacité de distinction de mouvement de notre méthode.
+Le modèle de comportement de t\^ache choisi est une décroissance exponentielle dont 
+les paramètres seront les paramètres de l'optimisation du problème~\ref{optimProblem}.
+
+
+\subsubsection{Mouvements d'atteintes}
+\label{sec:distinc1}
+Dans ce paragraphe, deux mouvements sont considérés: 
+\emph{mouvement~2.a} et \emph{mouvement~2.b}.
+Le premier est un mouvement d'atteinte lointain avec la main droite.
+Ce mouvement d'atteinte de la main droite a une influence sur la main gauche par
+le biais de la t\^ache \emph{com}: pour retrouver son équilibre,
+le robot met sa main gauche en arrière.
+Le second mouvement est la même t\^ache d'atteinte de la main droite, mais
+une seconde t\^ache est ajoutée. Il s'agit d'une t\^ache d'atteinte de main gauche.
+La position désirée pour cette dernière t\^ache a été définie artificiellement comme 
+étant la position finale de la main gauche obtenue lors du premier mouvement.
+
+Les état finaux du robot pour les deux mouvements sont illustrés dans la figure~\ref{fig:spotDiffbis}.
+\begin{figure}[t]
+  \centering
+  \subfigure{
+  \includegraphics[trim=220px 10px 220px 0px, width=0.43\linewidth, clip=true]{figures/chapitre1/Lonly.ps}
+  }
+  \subfigure{
+  \includegraphics[trim=220px 10px 220px 0px, width=0.43\linewidth, clip=true]{figures/chapitre1/RL.ps}
+  }
+  \caption[Mouvements d'atteintes.]{États finaux des le \emph{mouvement~2.a} et le \emph{mouvement~2.b}.}
+  \label{fig:spotDiffbis}
+\end{figure}
+Une vidéo montrant les deux mouvements appliqués sur le robot 
+HRP-2 est disponible\footnote{\url{http://homepages.laas.fr/shak/videos/}}.
+Les deux mouvements se ressemblent, et il est très difficile à l'\oe{}il nu
+de dire quel mouvement implique les deux t\^aches d'atteinte sans le contexte.
+Dans le premier cas, le mouvement de la main gauche est dû à aux t\^aches \emph{com}
+et \emph{prise droite}, étant donné que c'est un effet secondaire pour compenser
+l'équilibre de la main droite.
+Dans le second cas, le mouvement de la main gauche est découplé,
+puisque la main gauche a été dirigée par son propre objectif.
+Cependant, dans l'espace de t\^aches approprié, ces mouvements apparaissent
+clairement différents.
+La figure~\ref{fig:XP2RFit} montre un exemple de résultats de l'ajustement de 
+modèles de t\^aches pour la main droite et la main gauche appliqué au \emph{mouvement~2.a}.
+\begin{figure*}[p]
+\centering
+\subfigure{
+%\includegraphics[width=0.9\linewidth]{figures/chapitre5/projRHNull.eps}
+  \resizebox{.47\textwidth}{!} {
+      \input{figures/chapitre5/simu/2a/taskRhandNormInvJerr_0}
+      }      }
+      \subfigure{
+  \resizebox{.47\textwidth}{!} {
+      \input{figures/chapitre5/simu/2a/taskLhandNormInvJerr_0}
+      }            }
+\caption[Ajustement de modèle de t\^ache sur le \emph{mouvement~2.a}.]{L'ajustement de modèle de t\^ache sur le \emph{mouvement~2.a} sur les t\^aches de la 
+main droite et gauche. La variable $r$ est le résidu,                                                         
+\ie~la distance entre deux courbes. Le mouvement de la main droite est correctement ajusté par
+le modèle de la t\^ache, montrant que la t\^ache est active. Le mouvement
+de la main gauche n'est pas ajusté correctement, puisque la t\^ache est inactive.
+Les deux cas sont facilement distinguables gr\^ace à la valeur du résidu.} 
+\label{fig:XP2RFit}
+\end{figure*}
+Le résidu de l'optimisation est élevé puisque l'ajustement n'est pas possible sur une 
+trajectoire qui ne respecte pas le modèle (en particulier, le résidu de la t\^ache \emph{prise gauche} est 
+bien plus élevé que celui associé à la t\^ache \emph{prise droite}).
+Les résultats de l'algorithme de détection sont résumé dans le 
+Tableau~\ref{tab:spotDiff1}.
+\begin{table}[t]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+Référence & Détectées & $\int \Vert \dot{q}(t) \Vert ^2 dt$ & $\int \Vert P\dot{q}(t) \Vert ^2 dt$ \\
+\hline
+\begin{tabular}{c}
+Com\\
+Prise droite\\
+Double support\\
+\end{tabular}
+
+&
+
+\begin{tabular}{c}
+Com\\
+Prise droite\\
+Double support\\
+\end{tabular}
+
+& 0.364398 & 0.00159355 \\
+\hline
+\begin{tabular}{c}
+Com\\
+Prise gauche\\
+Prise droite\\
+Double support\\
+\end{tabular}
+
+&
+\begin{tabular}{c}
+Com\\
+Prise gauche\\
+Prise droite\\
+Double support\\
+\end{tabular}
+
+& 0.538329  & 0.0035343 \\
+\hline
+\end{tabular}
+\caption[Résumé des résultats pour \emph{mouvement~2.a} et du \emph{mouvement~2.b}.]{Résultats de l'algorithme de sélection de t\^aches lors de l'analyse du \emph{mouvement~2.a} et du \emph{mouvement~2.b}.}
+\label{tab:spotDiff1}
+%\vspace{-20pt}
+\end{table}
+La première colonne liste les t\^aches 
+utilisées dans le mouvement de référence,
+la seconde colonne liste les t\^aches sélectionnées par l'algorithme,
+la troisième indique la norme du mouvement de référence (quantité de mouvement initialement observée),
+et la dernière colonne montre la norme du mouvement de référence projeté dans l'espace nul
+des t\^aches sélectionnées.
+La quantité de mouvement final est très faible pour les deux mouvements comparé au seuil
+défini comme critère d'arrêt 
+$\int \Vert P\dot{q}(t) \Vert ^2 dt > \epsilon$
+qui est fixé à $\epsilon = 0.07$.
+
+Enfin la figure~\ref{fig:RbeforeAfterProj} illustre comment les normes de la vitesse articulaire
+correspondant aux t\^aches \emph{prise droite} et \emph{prise gauche} évoluent
+après les projections dans les espaces nuls. 
+\begin{figure*}[p]
+\centering
+  \subfigure[Mouvement 2.a]{
+  \resizebox{.47\textwidth}{!} {
+      \input{figures/chapitre5/simu/2a/RbeforeAfterProj.tex}
+    }
+  \label{fig:RbeforeAfterProj:2a}
+  }
+  \subfigure[Mouvement 2.b]{
+  \resizebox{.47\textwidth}{!} {
+      \input{figures/chapitre5/simu/2b/RbeforeAfterProj.tex}
+  }
+  \label{fig:RbeforeAfterProj:2b}
+  }
+  \caption[Evolution de la trajectoire $\dot{\mbf{q}}$.]{Evolution de la trajectoire $\dot{\mbf{q}}$ projetée dans les espaces des t\^aches
+  \emph{prise droite} (en ligne pleine) et 
+  \emph{prise gauche} (en pointillés) après les projections successives du mouvement dans l'espace
+  nul des t\^aches \emph{prise droite} et l'espace nul de la t\^ache \emph{com}.
+  Dans le \emph{mouvement~2.a}, une grande partie du mouvement du bras gauche
+  est dû à la t\^ache \emph{com}: la suppression de la t\^ache \emph{com} va annuler presque tout
+  le mouvement du bras gauche.
+  Dans le \emph{mouvement~2.b}, le mouvement du bras gauche n'est pas seulement issu de
+  la t\^ache \emph{com}, mais principalement de la t\^ache \emph{prise gauche}.
+  La suppression de la t\^ache \emph{com} va seulement annuler une petite partie
+  du mouvement du bras gauche.}
+\label{fig:RbeforeAfterProj}
+\end{figure*}
+La projection du \emph{mouvement~2.a} dans l'espace nul de la t\^ache
+\emph{prise droite} va faire décroître la norme de la vitesse articulaire théorique
+associée tout en laissant la norme de la vitesse articulaire théorique de la t\^ache
+\emph{prise gauche} inchangée. La figure~\ref{fig:RbeforeAfterProj:2a} montre
+que la vitesse articulaire théorique associée à la t\^ache \emph{prise gauche}
+est diminuée après la projection du mouvement dans l'espace nul de la t\^ache \emph{com}.
+Ceci explique que le bras gauche du robot a été déplacé par la t\^ache \emph{com}.
+De plus, cette projection empêche la t\^ache \emph{prise gauche} d'être détectée par l'algorithme
+dans des itérations futures à cause de mouvements parasites.
+Cependant, après la projection du \emph{mouvement~2.b} dans l'espace nul de la t\^ache \emph{prise droite}
+et la t\^ache \emph{com}, la norme de la trajectoire de la vitesse articulaire associée à la t\^ache
+\emph{prise gauche} reste significative (figure~\ref{fig:RbeforeAfterProj:2b}). 
+Ceci signifie que la t\^ache \emph{com} n'a que peu d'influence sur le mouvement du
+bras gauche, et que le mouvement de ce bras est dû à une autre t\^ache.
+Par conséquent, l'algorithme de sélection de t\^ache va continuer à chercher la t\^ache
+qui a contrôlée le bras gauche.
+Après la détection des deux t\^aches principales (pour le \emph{mouvement~2.a}) et des 
+trois t\^aches principales (pour le \emph{mouvement~2.b}), 
+la norme de la dernière trajectoire de la vitesse articulaire n'est pas nulle parce que
+l'algorithme de sélection de t\^ache n'est pas terminé et d'autres t\^aches n'ont pas encore
+été sélectionnées.
+La t\^ache de \emph{double support} est alors détectée mais les courbes associées 
+ne sont pas tracées par souci de clarté, car elles sont quasi-nulles.
+D'autre part, la figure~\ref{fig:XP2RLFit} montre l'ajustement de modèle de t\^ache pour le \emph{mouvement~2.b}.
+\begin{figure*}[p]
+\centering
+%\includegraphics[width=0.9\linewidth]{figures/chapitre5/projRHNull.eps}
+\subfigure{
+  \resizebox{.47\textwidth}{!} {
+      \input{figures/chapitre5/simu/2b/taskRhandNormInvJerr_0}
+    }      
+    }
+\subfigure{
+  \resizebox{.47\textwidth}{!} {
+      \input{figures/chapitre5/simu/2b/taskLhandNormInvJerr_0}
+    }
+    }
+\caption[Ajustement de modèle de t\^ache pour le \emph{mouvement~2.b}.]{L'ajustement de modèle de t\^ache pour le \emph{mouvement~2.b} pour les t\^aches de 
+\emph{prise droite} et \emph{prise gauche}. Les deux mouvements de la main gauche et de
+la main droite sont correctement ajustés par le modèle, avec un petit résidu: 
+les t\^aches sont bien détectées.}
+\label{fig:XP2RLFit}
+\end{figure*}
+\FloatBarrier
+\subsubsection{Prise VS Prise orientée}
+\label{sec:distinc2}
+\begin{table}[t]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    Référence & Détectées & $\int \Vert \dot{q}(t) \Vert ^2 dt$ & $\int \Vert P\dot{q}(t) \Vert ^2 dt$ \\
+    \hline
+    \begin{tabular}{c}
+      Com\\
+      Regard\\
+      Prise\\
+      Double support\\
+    \end{tabular}
+    &
+    \begin{tabular}{c}
+      Com\\
+      Regard\\
+      Prise\\
+      Double support\\
+    \end{tabular}
+    & 0.619266 & 0.00245631 \\
+    \hline
+    \begin{tabular}{c}
+      Com\\
+      Regard\\
+      Prise orientée\\
+      Double support\\
+    \end{tabular}
+    &
+    \begin{tabular}{c}
+      Com\\
+      Regard\\
+      Prise\\
+      Prise orientée\\
+      Double support\\
+    \end{tabular}
+    & 0.717041 & 0.00344557\\
+    \hline
+  \end{tabular}
+  \caption[Résultats de l'algorithme pour l'analyse du \emph{mouvement~3.a} et du \emph{mouvement~3.b}.]{Résultats de l'algorithme de sélection de t\^ache 
+  pour l'analyse du \emph{mouvement~3.a} et du \emph{mouvement~3.b}.}
+  \label{tab:spotDiff2}
+  %\vspace{-3pt}
+\end{table}
+\begin{figure*}[t]
+\centering
+\subfigure{
+%\includegraphics[width=0.9\linewidth]{figures/chapitre5/projRHNull.eps}
+  \resizebox{.48\textwidth}{!} {
+      \input{figures/chapitre5/simu/3a/taskRhandScrewNormInvJerr_0}
+      }      }
+      \subfigure{
+  \resizebox{.48\textwidth}{!} {
+      \input{figures/chapitre5/simu/3b/taskRhandScrewNormInvJerr_0}
+    }
+    }
+\caption[L'ajustement de modèle de t\^ache \emph{prise orientée} échoue.]{L'ajustement de modèle de t\^ache \emph{prise orientée}
+échoue, car le résidu est plus élevé, pour le \emph{mouvement~3.a} et réussi pour le \emph{mouvement~3.b}.}
+\label{fig:spotDiff3:screw}
+\end{figure*}
+Dans ce paragraphe, le \emph{mouvement~3.a} et le \emph{mouvement~3.b} sont analysés.
+Les deux mouvements partagent la même position de but pour la main droite.
+La seule différence entre les deux démonstrations est la présence d'une contrainte 
+d'orientation sur la main droite dans le \emph{mouvement~3.b}.
+Les postures finales de ces mouvements sont illustrées dans la figure~\ref{fig:spotDiff2}.
+Le tableau~\ref{tab:spotDiff2} résume les résultats de l'algorithme de sélection de t\^ache
+qui s'est déroulé avec succès.
+Lors de l'analyse du \emph{mouvement~3.b}, la t\^ache de \emph{prise} a également
+été sélectionnée. Ce qui est parfaitement logique car dans ce cas précis,
+la t\^ache \emph{prise} est une sous-t\^ache de \emph{prise orientée}: la t\^ache \emph{prise}
+est identique à la t\^ache \emph{prise orientée} sans la contrainte d'orientation.
+Par contre, lors de l'analyse du \emph{mouvement~3.a}, la t\^ache
+\emph{prise orientée} n'est pas sélectionnée.
+La figure~\ref{fig:spotDiff3:screw} montre que l'ajustement de la t\^ache
+\emph{prise orientée} échoue pour le \emph{mouvement~3.a} mais 
+réussi pour le \emph{mouvement~3.b}.
+Comme précédemment,
+les projections annulent les mouvements résiduels qui pourraient mener à de futures détections erronées.
+Le mouvement résiduel après les projections successives sont finalement proches de zéro, ce qui 
+prouve que toutes les t\^aches ont été détectées.
+
+\subsubsection{Prise orientée VS Regard}
+\label{sec:distinc3}
+Les deux mouvements considérés sont le \emph{mouvement~4.a} et le \emph{mouvement~4.b}.
+Le \emph{mouvement~4.a} peut \^etre décrit par le scénario suivant: 
+un objet se trouve devant le robot, et crée une occlusion dans le champ de vision du robot.
+Pour se débarrasser de cette occlusion, le robot se penche sur sa droite.
+Lorsque le robot se penche, la main gauche est entrainée par le torse par un effet
+secondaire involontaire.
+La position et l'orientation de cette main sont enregistrées comme étant l'état
+désiré pour la t\^ache de prise orientée dans le \emph{mouvement~4.b}.
+Dans le \emph{mouvement~4.b}, le regard n'est pas contr\^olé. Le mouvement de la t\^ete
+est cette fois-ci, un effet secondaire du mouvement de la main gauche.
+Les postures finales du robot pour ces deux mouvements sont illustrées dans la figure~\ref{fig:spotDiff3},
+et les résultats des analyses sont résumés dans le Tableau~\ref{tab:spotDiff3}.
+\begin{table}[t]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+Référence & Détectée & $\int \Vert \dot{q}(t) \Vert ^2 dt$ & $\int \Vert P\dot{q}(t) \Vert ^2 dt$ \\
+\hline
+\begin{tabular}{c}
+Com\\
+Regard\\
+Double support\\
+\end{tabular}
+
+&
+
+\begin{tabular}{c}
+Com\\
+Regard\\
+Double support\\
+\end{tabular}
+
+& 0.534478 & 0.0545944 \\
+\hline
+\begin{tabular}{c}
+Com\\
+Prise orientée\\
+Double support\\
+\end{tabular}
+
+&
+\begin{tabular}{c}
+Com\\
+Prise orientée\\
+Double support\\
+\end{tabular}
+
+& 0.558084 & 0.0023297\\
+\hline
+\end{tabular}
+\caption[Résultats de l'algorithme pour l'analyse du \emph{mouvement~4.a} et du \emph{mouvement~4.b}.]{Résultats de l'algorithme de sélection de t\^aches à partir de l'analyse du \emph{mouvement~4.a} 
+et du \emph{mouvement~4.b}.}
+\label{tab:spotDiff3}
+%\vspace{-12pt}
+\end{table}
+
+Comme précédemment, les bonnes t\^aches ont été détectées pour chaque mouvement.
+Le résidu après les projections de toutes les t\^aches détectées étant très bas, 
+toutes les t\^aches ont été correctement détectées et soustraites au mouvement.\\
+
+Pour conclure, nous venons de montrer expérimentalement que, sans bruits, l'algorithme de détection
+se comporte parfaitement, \ie~que toute les t\^aches actives dans le mouvement analysé
+sont détectées, sans faux positifs, et la suppression des effets de ces t\^aches, via les projections
+du mouvement original dans les espaces nuls, conduit à un mouvement quasi nul. En effet, le mouvement
+n'est pas totalement annulé à cause du bruit numérique. Dans le paragraphe suivant
+nous réalisons des expérimentations dans un cadre réaliste en utilisant 
+un vrai robot et de véritables capteurs qui fourniront des signaux bruités,
+correspondant aux trajectoires articulaires du robot.
+
+\section{Expérimentations sur le robot}
+\label{sec:real}
+Dans ce paragraphe, nous démontrons la validité de l'algorithme de
+reconnaissance de t\^ache dans un cadre réaliste en analysant des signaux
+bruités. Cette fois, le mouvement de référence est joué sur un véritable
+robot HRP-2 et est observé en utilisant un système de capture de mouvement (figure~\ref{fig:hrp2Markers}).
+Comme dans les expérimentations en simulations, l'algorithme de sélection de t\^aches est appliqué
+sur des paires de mouvements visuellements proches.
+Dans la suite de ce paragraphe, nous détaillons le processus d'acquisition 
+des trajectoires articulaires par le biais du système de capture de mouvements.
+Puis, deux paires de mouvements seront analysées par l'algorithme de reconnaissance
+de t\^aches.
+
+\subsection{Protocol expérimental}\label{sec:xpset}
+Un mouvement est généré par la pile de t\^aches, puis est exécuté sur le robot HRP-2 équipé de marqueurs sur 
+chacun de ses corps (voir figure~\ref{fig:hrp2Markers}).
+\begin{figure}[t]
+  \centering
+  \begin{tabular}{cc}
+    \includegraphics[height=0.4\linewidth]{figures/chapitre5/hrp2Markers.ps} &
+    \includegraphics[height=0.4\linewidth]{figures/chapitre5/skel.ps} \\
+  \end{tabular}
+  \caption{Ensemble des marqueurs, et squelette virtuel pour le robot HRP-2.}
+  \label{fig:hrp2Markers}
+\end{figure}
+Le système de capture de mouvements utilisé est composé de 10 caméras 
+infrarouges, et enregistre les données à une fréquence de 200Hz.
+Les données collectées à partir de ces marqueurs sont utilisés pour
+construire un squelette virtuel qui est ajusté à la hiérarchie cinématique du
+robot (figure~\ref{fig:hrp2Markers}).
+Le système de capture de mouvements fournit une trajectoire pour chacun des
+corps du robot.
+Les données sont obtenues sous forme de trajectoires 6D de chaque corps
+du robot dans l'espace, sans aucune contrainte articulaire.
+
+L'analyse du mouvement est effectuée sur la trajectoire articulaire.
+Par conséquent, les trajectoires articulaires doivent être calculées à partir des
+données issues de la capture de mouvements.
+Les trajectoires articulaires sont calculées de manière classique, par minimisation
+de la distance entre les matrices de transformations $\mTransfMatrix{W}{R}{r_j}(\mbf{q})$
+associées à l'origine des articulations du robot et des matrices de transformations mesurées
+$\tensor[^{W}]{\mathbf{\hat{R}}}{_{m_j}}(t)$ par le système de capture de mouvement,
+en tenant compte des limites articulaires du robot. 
+\begin{eqnarray}
+  \mbf{\hat{q}}(t) =  & \underset{\mbf{q}}\argmin & \sum_j^m \Vert \tensor[^{W}]{\mathbf{\hat{R}}}{_{r_j}}(t) \ominus \tensor[^{W}]{\mathbf{R}}{_{r_j}}(\mbf{q}) \Vert ^2\\
+    & \text{s.t.} & q_{i\mathrm{min}} \leq q_i \leq q_{i\mathrm{max}}, \; i = 1..n
+  \label{mocapOpti}
+\end{eqnarray}
+où $m$ est le nombre de corps, $n$ le nombre
+d'articulations, $\mbf{q}$ est le vecteur de configuration du robot,
+$\ominus$ est l'opérateur de distance dans SO(3), 
+$\tensor[^{W}]{\mathbf{R}}{_{r_j}}(\mbf{q})$ est calculée en utilisant le modèle cinématique du robot, 
+et $\tensor[^{W}]{\mathbf{\hat{R}}}{_{m_i}}$ est obtenue par:
+\begin{equation}
+  \tensor[^{W}]{\mathbf{\hat{R}}}{_{r_j}}(t) = \tensor[^{W}]{\mathbf{R}}{_{W_{C}}} \times \tensor[^{W_{C}}]{\mathbf{\hat{R}}}{_{m_j}}(t) \times \tensor[^{m_j}]{\mathbf{R}}{_{r_j}}    
+  \label{mocapMatrix}
+\end{equation}
+où $\tensor[^{W}]{\mathbf{R}}{_{W_{C}}}$ est 
+la matrice de transformation entre le repère du monde
+et le repère de la zone d'expérimentation de la capture de mouvements.
+$\mTransfMatrix{m_j}{R}{r_j}$ sont des 
+transformations constantes dû à la différence entre un modèle de squelette quelconque de la capture de
+mouvement et du modèle cinématique du robot utilisé lors de la phase de calibration.
+Cette phase de calibration consiste à calculer les transformations $\tensor[^{W}]{\mathbf{R}}{_{W_{C}}}$
+et $\tensor[^{m_j}]{\mathbf{R}}{_{r_j}}$ à partir d'une posture connue.
+$\tensor[^{W_{C}}]{\mathbf{\hat{R}}}{_{m_j}}$
+est la matrice de transformation mesurée associée à l'origine 
+du corps virtuel $i$ dans le repère de référence du système de capture de mouvements.
+
+Les trajectoires articulaires obtenues sont utilisées pour effectuer la reconnaissance de t\^aches
+par retro-ingénierie.
+
+Sur le véritable robot, une flexibilité est introduite après l'articulation de la cheville.
+Elle interfère avec le mouvement au tout début car l'accélération angulaire
+au niveau des articulations est importante. La flexibilité n'est pas modélisée,
+ni dans l'algorithme de contr\^ole, ni dans la méthode de détection.
+Pour ne pas \^etre influencé par la flexibilité, les 100 premières millisecondes
+des mouvements analysés sont ignorées. C'est dans cette phase que les effets de la
+flexibilité sont les plus importants dûs à l'accélération initiale typique d'une t\^ache
+de régulation proportionnelle en cinématique inverse.
+Dans les deux prochains paragraphes, nous considérons que les mesures sont directement
+les trajectoires $\mbf{\hat{q}}$ données par~\eqref{mocapOpti}.
+
+\subsection{Prise VS Maintien de l'équilibre}
+Cette expérience correspond à celle effectuée en simulation dans le paragraphe~\ref{sec:distinc1}:
+le premier mouvement est un mouvement de la main gauche produit par le couplage entre
+la prise lointaine de la main droite, et la t\^ache \emph{com} (\emph{mouvement~2.a}). 
+Le second mouvement correspondant à une double prise, a été construit pour 
+présenter une ambiguïté avec le premier mouvement~(\emph{mouvement~2.b} dans le tableau~\ref{tab:motion}).
+Le tableau~\ref{tab:spotDiffReal1} présente les résultats de l'algorithme de reconnaissance
+pour le \emph{mouvement~2.a} et le \emph{mouvement~2.b} avec le critère d'arrêt égal à $ \epsilon = 0.07$.
+\begin{table}[t]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    Référence & Détectée & $\int \Vert \dot{q}(t) \Vert ^2 dt$ & $\int \Vert P\dot{q}(t) \Vert ^2 dt$ \\
+    \hline
+    \begin{tabular}{c}
+      Com\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    &
+
+    \begin{tabular}{c}
+      Com\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    & 0.104835 & 0.0482885 \\
+    \hline
+    \begin{tabular}{c}
+      Com\\
+      Prise gauche\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    &
+    \begin{tabular}{c}
+      Com\\
+      Prise gauche\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    & 0.142293  & 0.0541836 \\
+    \hline
+  \end{tabular}
+  \caption[Résultats de l'algorithme sur le vrai robot.]{Résultats de l'algorithme de sélection de t\^aches pour l'analyse du \emph{mouvement~2.a} et du \emph{mouvement~2.b} joués sur le vrai robot.}
+  \label{tab:spotDiffReal1}
+\end{table}
+
+En ce qui concerne le \emph{mouvement~2.a}, l'ordre d'extraction des t\^aches est:
+\emph{prise droite}, \emph{double support} et \emph{com}.
+Tandis que pour le \emph{mouvement~2.b},
+les t\^aches extraites sont: \emph{prise droite},  \emph{com}, \emph{double support} et \emph{prise gauche}.
+
+Les figure~\ref{fig:exp1:headFit} et \ref{fig:exp1:taskLhand} montrent l'ajustement
+du modèle de t\^ache à la première itération de l'algorithme pour les t\^aches \emph{tête} et \emph{prise gauche}. 
+Comme prévu, l'ajustement est correct seulement pour la t\^ache 
+\emph{prise gauche} dans le \emph{mouvement~2.b} tandis que cette t\^ache est rejetée dans
+le \emph{mouvement~2.a} à cause de son ajustement incorrect.
+\begin{figure*}[t]
+  \centering
+  \subfigure[Mouvement 2.a]{
+  \resizebox{.48\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2a/taskHeadNormInvJerr_0.tex}
+  }
+  \label{fig:exp1:headFit:R}
+  }
+  \subfigure[Mouvement 2.b]{
+  \resizebox{.48\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2b/taskHeadNormInvJerr_0.tex}
+  }
+  \label{fig:exp1:headFit:RL}
+  }
+  \caption[T\^ache non sélectionnée.]{Ajustement des modèles de t\^ache à la première itération de l'algorithme de sélection de
+  t\^aches pour les t\^aches \emph{tête} dans le \emph{mouvement~2.a} et \emph{mouvement~2.b} 
+  Pour les deux mouvements, $r$ est élevé: la t\^ache \emph{tête}, qui n'est pas active, n'est
+  pas sélectionnée.}
+  \label{fig:exp1:headFit}
+\end{figure*}
+\begin{figure*}[t]
+  \centering
+  \subfigure[Mouvement 2.a]{
+  \resizebox{.48\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2a/taskLhandNormInvJerr_0.tex}
+  }                           
+  \label{fig:exp1:taskLhand:R}
+  }
+  \subfigure[Mouvement 2.b]{
+  \resizebox{.48\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2b/taskLhandNormInvJerr_0.tex}
+  }
+  \label{fig:exp1:taskLhand:RL}
+  }
+  \caption[La t\^ache \emph{prise gauche} n'est pas pertinente dans le \emph{mouvement~2.a}.]{Ajustement des modèles de t\^ache à la première itération de l'algorithme de sélection de t\^aches
+  pour la t\^ache \emph{prise gauche} dans le \emph{mouvement~2.a} et \emph{mouvement~2.b} 
+  La t\^ache \emph{prise gauche} n'est pas pertinente dans le \emph{mouvement~2.a}, 
+  mais est sélectionnée dans le \emph{mouvement~2.b}.}
+  \label{fig:exp1:taskLhand}
+\end{figure*}
+
+Bien que la t\^ache \emph{tête} ne soit impliquée dans aucun des mouvements,
+la tête n'est pas fixe dans l'espace à cause du mouvement 
+du torse et des jambes causés par les t\^aches actives.
+Dans le \emph{mouvement~2.b}, la t\^ache candidate \emph{t\^ete} impliquerait moins de mouvement 
+que dans le \emph{mouvement~2.a}. La raison est que lorsque les deux 
+mains opposées du robot sont contraintes, le torse n'a pas beaucoup de liberté. 
+Cependant, la t\^ache \emph{tête} n'est pas gardée pour aucun des deux mouvements (le résidu $r$ est élevé).
+
+L'évolution du mouvement projeté dans les espaces de la t\^ache 
+\emph{prise gauche} et \emph{prise droite}
+après les projections successives dans les espaces nuls
+automatiquement sélectionnées est illustrée dans la 
+figure~\ref{fig:exp1:Evolution2L}. Pour le \emph{mouvement~2.a},
+le mouvement du bras gauche est annulé après avoir annulé la t\^ache
+\emph{com}.
+\begin{figure*}[p]
+  \centering
+  \subfigure[Mouvement 2.a]{
+  \resizebox{.47\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2a/RevolutionLH.tex}
+  }                           
+  \label{fig:exp1:Evolution2L:a}
+  }
+  \subfigure[Mouvement 2.b]{
+  \resizebox{.47\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2b/RevolutionLH.tex}
+  }
+  \label{fig:exp1:Evolution2L:b}
+  }
+  \caption[Evolution du mouvement après annulation de t\^aches.]{Norme du mouvement associés aux t\^aches \emph{prise gauche} (\ie mouvement reconstruit de
+  la main gauche).
+  Le mouvement est nul après avoir retiré la t\^ache \emph{com} dans le 
+  \emph{mouvement~2.a}. Dans ce cas, cela signifie que le mouvement de la main 
+  gauche provenait de la t\^ache \emph{com}.
+  Tandis que dans le \emph{mouvement~2.b}, le mouvement de la main gauche
+  n'est pas annulé après avoir retiré la t\^ache 
+  \emph{com}. Le mouvement devient nul uniquement après avoir retiré la t\^ache
+  \emph{prise gauche}: le mouvement de la main gauche provenait de la t\^ache
+  \emph{prise gauche}.}
+  \label{fig:exp1:Evolution2L}
+\end{figure*}
+Dans le \emph{mouvement~2.b}, le mouvement de la main gauche n'est pas annulé par 
+la projection dans l'espace nul de la t\^ache 
+\emph{com}, mais devient nul après projection dans l'espace nul de la t\^ache
+\emph{prise gauche}.
+La figure~\ref{fig:exp1:Evolution2R} montre comment évolue le mouvement reconstruit de la main
+droite lorsque le mouvement dû à une t\^ache est enlevé. On peut voir
+que le bras droit bouge à cause des t\^aches \emph{prise droite} et
+\emph{com}.
+\begin{figure*}[p]
+  \centering
+  \subfigure[Mouvement 2.a]{
+  \resizebox{.47\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2a/RevolutionRH.tex}
+  }                           
+  \label{fig:exp1:Evolution2R:a}
+  }
+  \subfigure[Mouvement 2.b]{
+  \resizebox{.47\textwidth}{!} {
+  \input{figures/chapitre5/realRobot/2b/RevolutionRH.tex}
+  }
+  \label{fig:exp1:Evolution2R:b}
+  }
+  \caption[Annulations succéssives de t\^aches.]{Mouvement reconstruit de la main droite après les projections successives.
+  Le mouvement de la main droite est une conséquence des t\^aches
+  \emph{prise droite} et \emph{com}, comme c'est expliqué par le fait 
+  que le mouvement de la main droite est annulé après la suppression
+  des t\^aches \emph{prise droite} et \emph{com}.}
+  \label{fig:exp1:Evolution2R}
+\end{figure*}
+La figure~\ref{fig:exp1:PqdotNorms} montre l'évolution de la quantité de mouvement
+après chaque sélection de t\^ache dans les deux mouvements.
+La quantité décroit au fur et à mesure des projections, jusqu'à ce que le mouvement
+restant soit principalement du bruit issu des capteurs.
+\begin{figure*}[p]
+  \centering
+  \subfigure[Mouvement 2.a]{
+  \resizebox{.47\textwidth}{!} {
+    \input{figures/chapitre5/realRobot/2a/PqdotNormsR}
+  }
+  \label{fig:exp1:PqdotNormsR}
+  }
+  \subfigure[Mouvement 2.b]{
+  \resizebox{.47\textwidth}{!} {
+    \input{figures/chapitre5/realRobot/2b/PqdotNormsRL}
+  }
+\label{fig:exp1:PqdotNormsRL}
+}
+\caption[Évolution de la norme du mouvement après annulations successives.]{Evolution de la norme du mouvement après projections successives
+du mouvement dans les espaces nuls des t\^aches pour le 
+\emph{mouvement~2.a} et \emph{mouvement~2.b}.}
+\label{fig:exp1:PqdotNorms}
+\end{figure*}
+
+\subsection{Regard VS torse}
+Les mouvements considérés sont les 
+\emph{mouvement~5.a} et \emph{mouvement~5.b}.
+Dans le premier cas, le robot regarde sa main droite tout en effectuant une prise avec
+celle-ci.
+Dans le second cas, le robot effectue une prise identique, mais doit maintenir
+son torse dans la posture initiale. La figure~\ref{fig:motion5}
+montre la posture finale du robot pour ces deux mouvements.
+\begin{figure}[t]
+  \centering
+  \begin{tabular}{cc}
+    \includegraphics[width=0.40\linewidth]{figures/chapitre5/realRobot/5a/5aFinal1.ps} &
+    \includegraphics[width=0.40\linewidth]{figures/chapitre5/realRobot/5b/5bFinal1.ps} \\
+  \end{tabular}
+  \caption{Posture finale pour le \emph{mouvement~5.a} et le \emph{mouvement~5.b}.}
+  \label{fig:motion5}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+Le tableau~\ref{tab:result5} résume les résultats de l'algorithme de sélection de t\^aches.
+Malgré le bruit, les t\^aches sont correctement détectées. Les deux mouvements sont
+différenciés correctement.
+Enfin, le résidu très faible après l'annulation de toutes les t\^aches
+indique qu'il n'y a pas d'autres t\^aches à reconnaitre. 
+\begin{table}[t]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    Référence & Détectée & $\int \Vert \dot{q}(t) \Vert ^2 dt$ & $\int \Vert P\dot{q}(t) \Vert ^2 dt$ \\
+    \hline
+    \begin{tabular}{c}
+      Com\\
+      Regard\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    &
+
+    \begin{tabular}{c}
+      Com\\
+      Regard\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    & 0.320001 & 0.0785168 \\
+    \hline
+    \begin{tabular}{c}
+      Torse\\
+      Com\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    &
+    \begin{tabular}{c}
+      Torse\\
+      Com\\
+      Prise droite\\
+      Double support\\
+    \end{tabular}
+
+    & 0.216742 & 0.0516134 \\
+    \hline
+  \end{tabular}
+  \caption{Résultats de l'algorithme de sélection de t\^aches à partir de l'analyse des \emph{mouvement~5.a} 
+  et \emph{mouvement~5.b} joués sur le vrai robot.}
+  \label{tab:result5}
+\end{table}
+La figure~\ref{fig:exp6:PqdotNorms5} montre l'évolution de la norme
+du mouvement après les projections dans les espaces nuls des t\^aches: 
+\emph{Prise droite},  \emph{regard}, \emph{double support} and \emph{com} pour
+le \emph{mouvement~5.a}, et les t\^aches \emph{prise droite}, \emph{double support}, \emph{com}
+et \emph{torse} pour le \emph{mouvement~5.b}.
+\begin{figure*}[t]
+  \centering
+  \subfigure[Mouvement 5.a]{
+  \resizebox{.46\textwidth}{!} {
+    \input{figures/chapitre5/realRobot/5a/PqdotNorms5a}
+  }
+  }
+  \subfigure[Mouvement 5.b]{
+  \resizebox{.46\textwidth}{!} {
+    \input{figures/chapitre5/realRobot/5b/PqdotNorms5b}
+  }
+}
+\caption[Évolution de la norme du mouvement.]{Évolution de la norme du mouvement après avoir projeté avec succès
+le mouvement dans les espaces nuls des t\^aches pour les mouvements
+\emph{mouvement~5.a} et \emph{mouvement~5.b}.}
+\label{fig:exp6:PqdotNorms5}
+\end{figure*}
+Comme dans les précédentes expérimentations, la projection fait strictement décroitre
+la quantité de mouvement à chaque itération de l'algorithme. La quantité de mouvement restant 
+à la fin de l'algorithme est clairement dû au bruit.
+\FloatBarrier

@@ -1,0 +1,332 @@
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\section{M\'ethode}
+\label{chap:taskReco}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\subsection{Hypothèses}
+On suppose que le modèle de comportement de toute les t\^aches potentiellement utilisées sont connus
+($\mbf{e}$, $\mbf{\dot{e}^*}$, $\mbf{J}$). Le modèle du robot
+ainsi que toutes les t\^aches susceptibles d'intervenir
+dans le mouvement sont connus. L'ensemble de ces t\^aches est appelé le \emph{lot de t\^aches}
+et représente les capacités du robot.
+Le mouvement observé est supposé avoir été généré en utilisant un sous-ensemble
+inconnu du lot de t\^aches.
+On suppose aussi que les t\^aches intervenant dans le mouvement observé sont compatibles
+au sens des projections~$\mbf{P}$ définies dans~\eqref{eq:projector},
+c'est-à-dire qu'il n'y a pas de singularité algorithmique~\cite{chiaverini97}. Enfin
+l'ensemble des t\^aches actives ne changent pas d'état pendant le mouvement
+(une pile de t\^aches fixe est valide pendant toute la durée du mouvement).
+Enfin, le mouvement observé est donné sous la forme de trajectoire articulaire: $\mbf{\hat{\dot{q}}}(t)$.
+Dans notre cas, cette trajectoire articulaire sera reconstruite à partir de données issues
+d'un système de capture de mouvements comme décrit dans le paragraphe~\ref{sec:xpset}.
+
+\subsection{Présentation générale}
+\label{sec:alg1:selec}
+L'idée générale est de reconstruire de manière itérative
+la pile de t\^aches qui aurait généré le mouvement observé.
+La trajectoire articulaire observée est projetée dans 
+chacun des espaces de t\^aches issu d'un lot de t\^aches connus.
+Les trajectoires projetées sont ensuite comparé par optimisation à une trajectoire
+théorique calculée gr\^ace au modèle de génération.
+Cette comparaison correspond à une fonction de coût dont le score
+va servir de critère de selection. La t\^ache qui donne la trajectoire
+projetée de plus faible score est sélectionnée comme étant une
+t\^ache intervenant dans le mouvement.
+
+Les effets de la t\^ache sélectionnée sont annulés en projetant la trajectoire
+articulaire dans l'espace nul de la t\^ache. Le mouvement résultant est alors utilisé
+pour l'itération suivante.
+
+Si à l'itération $n$ le mouvement résultant de l'annulation d'une t\^ache est nul, alors
+tous les mouvements présent dans le mouvement initial ont été justifiés 
+par l'exécution des t\^aches sélectionnées. Par conséquent,
+la pile de t\^aches qui aurait généré le mouvement observé
+est constituée des t\^aches sélectionnées.
+\newcommand{\shOUTPUT}{\textbf{Output: }}
+\newcommand{\shINPUT}{\textbf{Input: }}
+
+\begin{algorithm}[t]
+  \caption{Algorithme de sélection de t\^aches}
+  \label{alg:taskSelection}
+\begin{algorithmic}[1]
+  \STATE \shINPUT $\mathbf{\hat{\dot{q}}}(t)$
+\STATE \shOUTPUT $activePool$
+\STATE $\mathbf{P}_A\mathbf{\dot{q}}(t)\gets \mathbf{\hat{\dot{q}}}(t)$
+\WHILE{$\int \Vert \mathbf{P}_A\mathbf{\dot{q}}(t) \Vert ^2 dt > \epsilon$ }
+  \FOR{task $i = 1..n$}
+    \STATE $r_i \gets \mathrm{taskFitting}(i, activePool)$
+  \ENDFOR
+  \STATE $i_{select} \gets \mathrm{argmin}(r_i)$
+  \STATE $activePool.\mathrm{push}(i_{select})$
+  \STATE $\mathbf{P}_A\mathbf{\dot{q}}(t) \gets \mathrm{projection}(i_{select}, \mathbf{P}_A\mathbf{\dot{q}}(t))$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+L'algorithme est présenté dans l'algorithme~\ref{alg:taskSelection}.
+La trajectoire de vitesse articulaire du mouvement observé est notée
+$\mathbf{\hat{\dot{q}}}(t)$.
+$\mbf{P}_A\mbf{\dot{q}}(t)$ représente les résultats des mouvements projetés dans les espaces nuls des t\^aches
+sélectionnées. $A$ est l'ensemble des t\^aches qui ont été selectionnées.
+Avant la première itération, $\mbf{P\dot{q}}(t)$ est initialisée avec la trajectoire  
+à analyser. Ensuite, à chaque itération, cette trajectoire est projetée
+dans l'espace nul de la t\^ache sélectionnée.
+$r_i$ représente le score de la fonction de coût de l'optimisation. $activePool$ représente
+l'ensemble des t\^aches sélectionnées lors du déroulement de l'algorithme. 
+
+Dans le cas où le mouvement observé a été exactement
+généré par la pile de t\^aches, la trajectoire articulaire $\mathbf{P\dot{q}}$ après les
+projections dans l'espace nul de toute les t\^aches est nulle.
+Cependant, en présence de bruits (comme par exemple un bruit issu 
+de vrais capteurs lors de l'acquisition du mouvement),
+un résidu est systématiquement obtenu. Il faut donc utilisé une valeur
+seuil comme critère d'arrêt: la boucle s'arrête lorsque le résidu
+des projections passe en dessous du niveau du bruit de la chaine d'acquisition.
+$\epsilon$ représente ce seuil: lorsque la norme du mouvement
+est inférieure à ce seuil, l'algorithme s'arrête.
+
+La section suivante décrit les deux fonctions principales de l'algorithme:
+\begin{itemize}
+  \item $\textsf{projection}(i, \mathbf{\dot{q}}(t))$ calcule la projection
+de la vitesse $\dot{\mathbf{q}}(t)$ dans l'espace nul de la t\^ache $i$.
+  \item $\textsf{taskFitting}(i, activePool)$ s'occupe de l'ajustement de 
+courbe du mouvement observé et du mouvement théorique et calcule donc un score. 
+Ce processus est détaillé dans la section~\ref{sec:alg2:proj}.
+\end{itemize}
+
+\subsection{Projection du mouvement}
+\label{sec:alg2:nullification}
+%\subsubsection{General case}
+Une reconstruction des trajectoires dans l'espace des t\^aches à partir des trajectoires 
+angulaires peut être obtenue en multipliant cette trajectoire articulaire par la 
+jacobienne de la t\^ache calculée en chaque point.
+
+Afin d'annuler les effets d'une t\^ache détectée $i$, 
+la trajectoire articulaire est projetée dans l'espace nul
+de cette t\^ache en la multipliant par le projecteur dans l'espace nul
+de toute les t\^aches à annuler.
+\`A chaque instant $t$ du mouvement :
+\begin{equation}
+  \mbf{P}_A\mbf{\dot{q}}(t) \leftarrow \mbf{P}_{A+i}(t) \mbf{P}_A\mbf{\dot{q}}(t) 
+  \label{eq:projection}
+\end{equation}
+où $A$ est l'ensemble des t\^aches déjà sélectionnées et $\mbf{P}_A(t)$ est mis à jour:
+\begin{equation*}
+  \mbf{P_{A+i}}(t) = \mbf{P}_A(t) - (\mbf{J_{i}}(t)\mbf{P}_A(t))^+(\mbf{J_{i}}(t)\mbf{P}_A(t))
+  \label{eq:projectionupdate}
+\end{equation*}
+Le projecteur $\mbf{P}_A(t)$ est initialisé à $\mbf{P}_A^0(t) = \mbf I$. Le mouvement
+restant après projection $\mbf{P}_A\mbf{\dot{q}}(t)$ est analysé pour détecter
+les t\^aches potentiellement restantes.
+
+L'opération de projection va annuler les effets de l'espace
+de la t\^ache sélectionnée dans le mouvement. Dans l'espace articulaire,
+ces effets sont les suivants: d'une part, la composante de mouvement
+qui est indépendante des autres t\^aches est complètement annulée, et d'autre part, la composante 
+de mouvement qui est couplée avec d'autres t\^aches est modifiée.
+Le premier effet est bénéfique car il permet d'éviter
+de fausses détections causées par un mouvement présent dans 
+l'espace de la t\^ache sélectionnée.
+Cependant, la partie couplée doit \^etre traitée avec attention
+à cause de sa modification comme expliqué dans l'exemple suivant:
+
+%\medskip
+%\subsubsection{Example with two tasks}
+En considérant un mouvement composé de deux t\^aches arbitraires $\mbf{e}_a$ et $\mbf{e}_b$.
+La loi de commande est donnée par:
+\begin{equation}
+  \mbf{\dot{q}} = \mbf{J}_a^+\mbf{\dot{e}}_a^* - (\mbf{J}_b\mbf{P}_a)^+ (\mbf{\dot{e}}_b^* - \mbf{J}_b\mbf{J}_a^+\mbf{\dot{e}}_a^*)
+  \label{eq:controlLaw2Tasks}
+\end{equation}
+
+Si $\mbf{e}_a$ est détectée en premier, \eqref{eq:projection} est appliquée avec
+$i_{select} = a$. Le produit de~(\ref{eq:controlLaw2Tasks}) par $\mbf{P}_a$
+annule le mouvement dans l'espace de la t\^ache $a$:
+\begin{equation}
+  \mbf{P}_a \mbf{\dot{q}} = \underbrace{\mbf{P}_a \mbf{J}_a^+\mbf{\dot{e}}_a^*}_{\mbf{0}} + \mbf{P}_a (\mbf{J}_b\mbf{P}_a)^+ (\mbf{\dot{e}}_b^* - \mbf{J}_b\mbf{J}_a^+\mbf{\dot{e}}_a^*)  
+  \label{eq:cancel1_2:1}
+\end{equation}
+Le premier terme est nul par définition de $\mbf{P}_a$.
+Le mouvement provoqué par $\mbf{P}_a \mbf{\dot{q}}$ dans l'espace de la t\^ache $b$ est 
+obtenue par son produit avec $\mbf{J}_b$:
+\begin{equation}
+  \mbf{J}_b \mbf{P}_a \mbf{\dot{q}} = \mbf{\dot{e}}_b^* -
+  \mbf{J}_b  \mbf{J}_a^+ \mbf{\dot{e}}_a^*  
+  \label{eq:J2P1q}
+\end{equation}
+puisque $\mbf{J}_b\mbf{P}_a(\mbf{J}_b\mbf{P}_a)^+ = \mbf{I}$ par hypothèse.
+Le premier terme est la composante indépendante de la seconde t\^ache, et
+le second terme est la composante couplée avec la t\^ache $a$.
+Par conséquent, la projection dans l'espace nul de la t\^ache découverte à la première itération
+va faire apparaitre le terme de couplage dont il faudra tenir compte pour la reconnaissance d'autres t\^aches.
+Ce couplage sera traité dans la prochaine section.
+
+\subsection{Ajustement de t\^ache par optimisation} \label{sec:alg2:proj}
+$\medoth{}(t)$ représente la trajectoire causée par le mouvement à analyser courant $\mbf{P}_A\mbf{\dot{q}}$ 
+dans l'espace de la t\^ache observée $\mbf{e}$. La quantification de la pertinence
+d'une t\^ache donnée $\mbf{e}$, par rapport au mouvement,
+est obtenue en appliquant une optimisation par les moindre carrés
+entre le véritable mouvement observé projeté dans l'espace de la t\^ache et le comportement de 
+référence d'une t\^ache dont les paramètres sont inconnus:
+\begin{equation}
+  \mbf{\hat x} = \underset{\mbf{x}}\argmin \frac{\int \Vert \medoth{}(t) - \medot{\mbf x}(t) \Vert^2 \mathrm{dt}}{\int \Vert \medoth{}(t) \Vert^2 \mathrm{dt}}
+\label{optimProblem}
+\end{equation}
+
+\noindent où $\medoth{}(t)$ est la trajectoire observée et $\medot{\mbf{x}}(t)$ est la trajectoire
+générée par le modèle de t\^ache en utilisant les paramètres $\mbf{x}$.
+Le score est donc le résidu de l'optimisation après avoir essayé d'obtenir la meilleure correspondance 
+entre la trajectoire observée et le modèle théorique dans l'espace des t\^aches.
+
+Dans quelques cas, la trajectoire $\medoth{}$ peut \^etre observée directement.
+Par exemple, si l'espace de t\^ache est la position 3D d'une main, une observation
+directe est possible. Cependant, en général, une observation directe n'est pas possible.
+Typiquement, le centre de masse du robot est difficile à observer avec précision dans le cadre d'une t\^ache
+de maintien du centre de masse dans le polygone de sustentation.
+De plus, il n'est pas possible d'observer directement l'effet d'une succession de projections.
+$\medoth{}$ est alors obtenue gr\^ace au modèle géométrique du robot et
+de sa trajectoire articulaires lors du mouvement: $\mbf{J}_i\mbf{\hat{\dot{q}}}$.
+Cependant, procéder de cette manière amène à~(\ref{eq:J2P1q}), où le couplage
+des t\^aches précédemment sélectionnées apparait.
+Le mouvement projeté est alors augmenté par un terme qui va compenser ce couplage.
+\begin{equation}
+  \medoth{}(t) = \mbf{J}_i\mbf{P}_A \mbf{\dot{q}}(t) + \mbf{J}_i\mbf{J}_A^+\medoth{A}(t)
+  \label{eq:compensation}
+\end{equation}
+où $A$ est l'ensemble des t\^aches qui a déjà été détecté et $i$ est la t\^ache candidate.
+$\mbf{P}_A$ est le projecteur dans l'espace nul des t\^aches $A$, $\mbf{J}_A$ est 
+la jacobienne des t\^aches $A$. Le terme $\mbf{J}_i\mbf{J}_A^+\medoth{A}(t)$ représente la 
+composante du mouvement de la t\^ache $i$ couplé aux t\^aches de l'ensemble $A$.
+Tous les termes correspondant à $A$ sont connus puisqu'ils ont été identifiés
+dans la précédente itération de l'algorithme.
+
+\medskip
+En pratique, l'observation est échantillonnée et l'intégrale dans~\eqref{optimProblem} est une somme.
+Le problème d'optimisation~(\ref{optimProblem}) est en général un problème non
+linéaire. Pour le résoudre numériquement, le solveur CFSQP
+a été utilisé~\cite{lawrence97}. Le résultat de l'optimisation produit
+en même temps le résidu utilisé comme critère de sélection de la t\^ache la plus probable,
+et les valeurs numériques associées à la t\^ache (par exemple le gain et la position désirée, quand il
+s'agit de t\^aches proportionnelles).
+
+%The task reference behavior $\mbf{e_x}$ can, for example, be defined by an exponential regulation.
+%In that case, the characteristic trajectory in the task
+%space can be obtained by analytical integration of the differential equation $\mbf{\dot{e}} = -\lambda\mbf{e}$ :
+%it is an exponential decrease with three input parameters :
+%
+%\begin{equation}
+%p_{\mbf x}(t) = x_1 \mathrm{e}^{(-x_2 t)} + x_3
+%\label{eqTask}
+%\end{equation}
+%
+%The vector of parameters $(x_1, x_2, x_3)$ has then a material interpretation:
+%$x_3$ is the value at convergence ($x_3=s^*$). $x_1+x_3$ is the initial value ($x_1=s(0)-s^*$).
+%And $x_2$ is the gain ($x_2=\lambda$).
+
+\subsection{Invariance à l'ordre d'annulation}
+La précédente formulation de détection-projection permet d'annuler les effets de
+bords des t\^aches précédemment détectées sans introduire de couplage venant des t\^aches
+non détectées. Nous montrons maintenant que l'ordre dans lequel les t\^aches sont détectées
+et les projections suivantes n'affectent pas la détection des t\^aches restantes.
+
+Considérons un mouvement observé ayant été généré par une pile de t\^aches à
+deux étages où la t\^ache $a$ est prioritaire
+par rapport à la t\^ache $b$~(\ref{eq:controlLaw2Tasks}).
+\`A partir du mouvement observé initiallement, noté $\mbf{\dot{q}}$, on observe une trajectoire dans l'espace
+de la t\^ache $i$. La t\^ache est ensuite supprimé du mouvement. Le mouvement
+résultant est $\mbf{P}_i \mbf{\dot{q}}$. On observe alors une trajectoire dans l'espace de la tâche $j$.
+Nous montrons dans la suite que les observations dans les espaces des t\^aches sont invariablement les mêmes
+pour $i=a$ et $j=b$ ou pour $i=b$ et $j=a$. C'est-à-dire que 
+les deux t\^aches ayant servies à générer le mouvement
+peuvent \^etre détectées (et supprimées) dans n'importe quel
+ordre.
+
+Le mouvement de référence de l'espace de t\^ache $i$
+est noté $\medotc{i}$. Le mouvement observé par la t\^ache $i$ dans le mouvement
+initial $\mqdot$ est noté $\medoth{i}$, tandis que le mouvement observé par la t\^ache
+$j$ après avoir supprimé le mouvement issu de la t\^ache $i$ $\mP{j} \mqdot$ est noté~$\medothp{j}{i}$.
+
+\begin{proposition}
+  Soit un mouvement généré par une pile de t\^aches à deux étages. Alors
+$\medoth{i} = \medothp{i}{j} = \medotc{i}$, pour $i=a$ et $j=b$, et réciproquement, pour $i=b$ et $j=a$.
+\end{proposition}
+%\subsubsection{Direct implication: removing Task $a$, then Task $b$}
+\noindent\textbf{Preuve:}
+La preuve se fait en deux parties, en considérant que $a$ est annulée en premier ($i=a$ et $j=b$),
+puis que $b$ est annulée en premier ($i=b$ et $j=a$).\\
+
+\noindent\textbf{Détection de la t\^ache $a$, puis de la t\^ache $b$:}
+
+  Cette implication est immédiate.
+\`A la première itération, l'observation dans l'espace de t\^ache $a$ est directement
+$\medoth{a} = \mbf{J}_a\mbf{\hat{\dot{q}}} = \medotc{a}$.  
+Après la suppression de la t\^ache $a$, l'observation dans l'espace de la t\^ache $b$
+est obtenue à partir de \eqref{eq:compensation}:
+\begin{align*}
+ \medothp{b}{a} &=  \mbf{J}_b\mbf{\hat{\dot{q}}} +  \mbf{J}_b \mbf{J}_a^+ \medoth{a}\\
+ &= \mbf{J}_b(\mbf{J}_b \mbf{P}_a)^+ (\medotc{b} - \mbf{J}_b \mbf{J}_a^+\medotc{a}) + \mbf{J}_b \mbf{J}_a^+ \medotc{a}
+\end{align*}
+impliquant directement $\medothp{b}{a}=\medotc{b}$, puisque $\mbf{J}_b(\mbf{J}_b \mbf{P}_a)^+ = \mbf{J}_b \mbf{P}_a(\mbf{J}_b \mbf{P}_a)^+ = \mbf{I}$ et $\medoth{a} = \medotc{a}$.
+
+L'observation obtenu dans l'espace de t\^ache $b$ est indépendante de la projection
+dans l'espace nul de la t\^ache $a$.\\
+
+\noindent\textbf{Détection de la t\^ache $b$, puis de la t\^ache $a$:}
+
+\`A la première itération, l'observation dans l'espace de la t\^ache $b$ est directement
+\begin{equation*}
+\medoth{b}  = \mJ{b} \mJp{a} \medotc{a} + \mJ{b} ( \mJ{b} \mP{a} )^+ ( \medotc{b} - \mJ{b} \mJp{a} \medotc{a} )
+\end{equation*}
+ce qui implique $\medoth{b} = \medotc{b}$ puisque $\mJ{b} ( \mJ{b} \mP{a} )^+ = \mbf{I}$.
+
+La projection du mouvement initial~(\ref{eq:controlLaw2Tasks}) dans l'espace nul de
+la t\^ache $b$ à la fin de la première itération conduit au calcul de la trajectoire 
+dans l'espace de la t\^ache $a$ suivant:
+%\begin{equation}
+%  \mbf{P}_b \mbf{\hat{\dot{q}}} = \mbf{P}_b \mbf{J}_a^+\mbf{\hat{\dot{e}}}_a + 
+%  \mbf{P}_b (\mbf{J}_b \mbf{P}_a)^+ (\mbf{\hat{\dot{e}}}_b - \mbf{J}_b \mbf{J}_a^+ \mbf{\hat{e}}_a)
+%  \label{eq:proof:P2q}
+%\end{equation}
+\begin{align*}
+\medothp{a}{b} =& \mJ{a} \mP{b} \mJp{a} \medotc{a} +
+ \mJ{a} \mP{b} (\mJ{b} \mP{a} )^+ ( \medotc{b} - \mJ{b} \mJp{a} \medotc{a})
++ \mJ{a} \mJp{b} \medoth{b} \\
+=& (\mJ{a} \mP{b} \mJp{a} - \mJ{a} \mP{b} (\mJ{b} \mP{a} )^+ \mJ{b} \mJp{a}) \medotc{a} \\
+&+ (\mJ{a} \mP{b} (\mJ{b} \mP{a} )^+ + \mJ{a} \mJp{b}) \medotc{b}
+\end{align*}
+Nous montrons que cette somme est en réalité simplement égal à $\medotc{a}$
+en montrant d'abord que le coefficient gauche du premier terme 
+$(\mJ{a} \mP{b} \mJp{a} - \mJ{a} \mP{b} (\mJ{b} \mP{a} )^+ \mJ{b} \mJp{a})$, 
+qu'on note $\mbf{C}_1$, est égal à l'identité.
+Puis en montrant que le second coefficient gauche $(\mJ{a} \mP{b} (\mJ{b} \mP{a} )^+ + \mJ{a} \mJp{b})$,
+qu'on note $\mbf{C}_2$, est nul.
+$\mbf{C}_1$ peut s'écrire en développant l'operateur 
+de projection $\mP{b}$ en utilisant $\mbf{P} = \mbf{I} - \mbf{J}^+ \mbf{J}$:
+\begin{align*}
+\mbf{C}_1 =& \mJ{a} \mJp{a} -   \mJ{a} \mJp{b} \mJ{b} \mJp{a} \\
+&- \mJ{a} (\mJ{b} \mP{a} )^+ \mJ{b} \mJp{a}  + \mJ{a} \mJp{b} \mJ{b} (\mJ{b} \mP{a} )^+ \mJ{b} \mJp{a}
+\end{align*}
+Le premier terme est l'identité par hypothèse sur la t\^ache $a$, car
+$(\mJ{b} \mP{a} )^+ = \mP{b}(\mJ{b} \mP{a} )^+$, le troisième terme est nul par définition. 
+Par hypothèse sur les t\^aches $a$ et $b$, $(\mJ{b} \mP{a} )^+$ 
+est l'inverse généralisé de $\mJ{b}$, et donc $\mJ{b} (\mJ{b} \mP{a} )^+ \mJ{b} = \mJ{b}$,
+le quatrième terme est égal au second et se simplifie. Donc $\mbf{C}_1 = \mbf{I}$.
+
+De la même façon pour $\mbf{C}_2$, le projecteur $\mP{b}$ est developpé:
+\[
+\mbf{C}_2 = \mJ{a} (\mJ{b} \mP{a} )^+ - \mJ{a} \mJp{b}\mJ{b} (\mJ{b} \mP{a} )^+ + \mJ{a} \mJp{b}
+\]
+Comme précédemment, le premier terme est nul, $(\mJ{b} \mP{a} )^+$ 
+est l'inverse généralisé de $\mJ{b}$, le second terme est égal au troisième et se simplifie.
+
+Ceci prouve que le même ajustement est obtenu indépendamment de la t\^ache qui a été
+détectée la première. ~\QED 
+
+%\end{proof}
+
+\medskip
+La preuve peut \^etre étendue en utilisant les m\^emes arguments 
+pour un ensemble de $n$ t\^aches.
+D'une façon similaire, il est trivial de prouver que quelque soit l'ordre
+de détection, le mouvement calculé après toutes les projections est nul.
+

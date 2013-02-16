@@ -1,0 +1,279 @@
+%------------------------------------------
+% Taille figure
+%------------------------------------------
+
+\newcommand{\figw}{0.9\textwidth}
+\newcommand{\figh}{4cm}
+\newcommand{\minipw}{0.5\textwidth}
+%------------------------------------------
+% Txt
+%------------------------------------------
+
+\newcommand{\clic}{\emph{clic}}
+\newcommand{\via}{\emph{via}}
+\newcommand{\ie}{c'est-à-dire}
+\newcommand{\eg}{par exemple }
+\newcommand{\apriori}{\emph{a priori}}
+\newcommand{\ihand}{\emph{eye-in-hand}}
+\newcommand{\thand}{\emph{eye-to-hand}}
+\newcommand{\etal}{\emph{et al.}}
+\newcommand{\euclidien}{euclidien}
+\newcommand{\euclidienne}{\euclidien ne}
+\newcommand{\gaussien}{gaussien}
+\newcommand{\gaussienne}{\gaussien ne}
+\newcommand{\jacobien}{jacobien}
+\newcommand{\jacobienne}{\jacobien ne}
+
+%------------------------------------------
+% Acronymes
+%------------------------------------------
+\newcommand {\afm}{\textsc{AFM}}
+\newcommand {\anso}{\textsc{Anso}}
+\newcommand {\approche}{\textsc{Approche}}
+\newcommand {\arph}{\textsc{Arph}}
+\newcommand {\aviso}{\textsc{Aviso}}
+\newcommand {\friend}{\textsc{Friend}}
+\newcommand {\halo}{\textsc{Halo}}
+\newcommand {\kares}{\textsc{Kares}}
+\newcommand {\lares}{\textsc{Lares}}
+\newcommand {\manus}{\textsc{Manus}}
+\newcommand {\sam}{\textsc{Sam}}
+\newcommand {\victoria}{\textsc{Victoria}}
+\newcommand {\musiic}{\textsc{Musiic}}
+%------------------------------------------
+% Cameras
+%------------------------------------------
+
+%Camera mobile
+% dans les equations
+\newcommand{\cm}{e}
+\newcommand{\Cm}{\mathbf{e}}
+% dans le texte
+\newcommand{\txtcm}{$\cm${}}
+\newcommand{\txtCm}{$\Cm${}}
+
+%Camera fixe
+% dans les equations
+\newcommand{\cf}{d}
+\newcommand{\Cf}{\mathbf{d}}
+% dans le texte
+\newcommand{\txtcf}{$\cf${}}
+\newcommand{\txtCf}{$\Cf${}}
+
+%------------------------------------------
+% Reperes
+%------------------------------------------
+\newcommand{\txtRc}{$\mathcal{R}_c$}
+% camera deportee
+\newcommand{\txtRcf}{$\mathcal{R}_{\cf}${}}
+% camera embarquee
+\newcommand{\txtRcm}{$\mathcal{R}_{\cm}$}
+% repere monde
+\newcommand{\txtRw}{$\mathcal{R}_{w}$}
+% repere base
+\newcommand{\txtRb}{$\mathcal{R}_{b}$}
+% repere lie a l'objet
+\newcommand{\txtRo}{$\mathcal{R}_{o}$}
+% repere lie a la pince
+\newcommand{\txtRg}{$\mathcal{R}_{g}$}
+% repere lie a un solide
+\newcommand{\txtRs}{$\mathcal{R}_{s}$}
+
+
+\newcommand{\txtRef}[1]{$\equaRef{#1}$}
+\newcommand{\equaRef}[1]{\mathcal{R}_{#1}}
+
+%------------------------------------------
+% Matrices de passage
+%------------------------------------------
+\newcommand{\txtM}[2]{$\equaM{#1}{#2}$}
+\newcommand{\equaM}[2]{^{#1}\mathbf{M}_{#2}}
+
+%----------------------------------------------
+% composantes de la matrice homogene
+%----------------------------------------------
+
+\newcommand{\equaT}[2]{{^{#1}\mathbf{t}}_{#2}}
+\newcommand{\equaR}[2]{^{#1}\mathbf{R}_{#2}}
+\newcommand{\txtT}[2]{$\equaT{#1}{#2}$}
+\newcommand{\txtR}[2]{$\equaR{#1}{#2}$}
+%-------------------------------------------
+%  Geometrie epipolaire
+%-------------------------------------------
+
+% Matrice essentielle
+% dans les equations\emph{i.e.}
+\newcommand{\cfEcm}{^{\cf}\mathbf{E}_{\cm}}
+\newcommand{\cmEcf}{^{\cm}\mathbf{E}_{\cf}}
+% dans le texte
+\newcommand{\txtcfEcm}{$\cfEcm${}}
+\newcommand{\txtcmEcf}{$\cmEcf${}}
+
+% Matrice fondamental
+% dans les equations\emph{i.e.}
+\newcommand{\cfFcm}{^{\cf}\mathbf{F}_{\cm}}
+\newcommand{\cmFcf}{^{\cm}\mathbf{F}_{\cf}}
+% dans le texte
+\newcommand{\txtcfFcm}{$\cfFcm${}}
+\newcommand{\txtcmFcf}{$\cmFcf${}}
+
+
+%-------------------------------------------
+%          points 2D
+%-------------------------------------------
+
+% points dans le repere de la camera fixe
+\newcommand{\pcf}{^{\cf}\mathbf{p}}
+\newcommand{\txtpcf}{$\pcf${}}
+
+% points dans le repere de la camera mobile
+\newcommand{\pcm}{^{\cm}\mathbf{p}}
+\newcommand{\txtpcm}{$\pcm${}}
+
+% meme chose avec epipole
+\newcommand{\ecf}{^{\cf}\mathbf{e}}
+\newcommand{\txtecf}{$\ecf${}}
+\newcommand{\ecm}{^{\cm}\mathbf{e}}
+\newcommand{\txtecm}{$\ecm${}}
+
+% clic
+\newcommand{\pclic}{{^d\mathbf{x}_{clic}}}
+
+% point central
+\newcommand{\pcentral}{{\mathbf{x}_c}}
+
+% point unit reel frame
+\newcommand{\purf}[2]{^{#2}\mathbf{\tilde{x}}_{#1}}
+% point unit modele frame
+\newcommand{\pumf}[2]{^{#2}\mathbf{x}_{#1}}
+% point unit reel frame
+\newcommand{\pur}[1]{\mathbf{\tilde{x}}_{#1}}
+% point unit modele frame
+\newcommand{\pum}[1]{\mathbf{x}_{#1}}
+
+
+%--------------------------------------------
+%       Points 3d
+%--------------------------------------------
+
+% points dans le repere de la camera fixe
+\newcommand{\Pcf}{^{\cf}\mathbf{X}}
+\newcommand{\txtPcf}{$\Pcf${}}
+
+% points dans le repere de la camera mobile
+\newcommand{\Pcm}{^{\cm}\mathbf{X}}
+\newcommand{\txtPcm}{$\Pcm${}}
+
+% points dans le repere de objet 
+\newcommand{\Po}{^{o}\mathbf{X}}
+\newcommand{\txtPo}{$\Po${}}
+
+% points dans un repere qq
+% un argument qui est la lettre a mettre en exposant en avant de P
+\newcommand{\PProjRef}[1]{^{#1}\mathbf{\Pseul}}
+\newcommand{\PEucliRef}[1]{^{#1}\bar{\mathbf{\Pseul}}}
+\newcommand{\PCalRef}[1]{^{#1}\mathcal{\Pseul}}
+\newcommand{\Pseul}{X}
+% points qq dans un repere qq
+% deux argument un argument qui est la lettre et le second est son exposant
+\newcommand{\PNameRef}[2]{^{#2}\mathcal{#1}}
+
+
+%----------------------------------------------
+% Vecteur directeur
+%----------------------------------------------
+\newcommand{\vdirclic}{\mathbf{w}}
+
+
+%----------------------------------------------
+% Proba
+%----------------------------------------------
+\newcommand{\vetat}{\mathbf{\eta}}
+\newcommand{\Mcov}{\mathbf{P}}
+\newcommand{\distance}{D}
+%----------------------------------------------
+% Homographies
+%----------------------------------------------
+\newcommand{\equaA}{\mathbf{A}}
+\newcommand{\equaK}{\mathbf{K}}
+
+%----------------------------------------------
+% Frame
+%----------------------------------------------
+\newcommand{\iRef}[1]{{\mathbf{i}}}
+\newcommand{\jRef}[1]{{\mathbf{j}}}
+\newcommand{\kRef}[1]{{\mathbf{k}}}
+\newcommand{\uRef}[1]{{\mathbf{u}}}
+\newcommand{\vRef}[1]{{\mathbf{v}}}
+
+%----------------------------------------------
+% les fonctions implicites
+%----------------------------------------------
+
+\newcommand{\paramTri}{\mathcal{P}}
+\newcommand{\paramBi}{\mathbf{\rho}}
+
+%----------------------------------------------
+%               Les coniques
+%----------------------------------------------
+\newcommand{\conic}{\mathcal{C}}
+% coefficients de la conic
+\newcommand{\cParam}{k}
+\newcommand{\txtcParam}{$\cParam${}}
+
+% coefficient estimes de la conic
+\newcommand{\cParamEst}{\widehat{\cParam}}
+\newcommand{\txtcParamEst}{$\cParamEst${}}
+% parametre de la conique
+\newcommand{\cParamInd}[1]{\cParam_{#1}}
+\newcommand{\cParamEstInd}[1]{\widehat{\cParam}_{#1}}
+% matrice correspondant a la quadrique
+\newcommand{\MatConic}{\mathbf{C}}
+% matrice de la forme quadratique
+\newcommand{\matConic}{\mathbf{c}}
+%-----------------------------------------------
+%          Les quadriques
+%-----------------------------------------------
+
+\newcommand{\quadric}{\mathcal{Q}}
+
+% matrice correspondant a la quadrique
+\newcommand{\MatQuad}{\mathbf{\Gamma}}
+% matrice de la forme quadratique
+\newcommand{\matQuad}{\mathbf{\Gamma_{33}}}
+% les determinant assosice
+\newcommand{\DetQuad}{\Delta_{\MatQuad}}
+\newcommand{\detQuad}{\Delta_{\matQuad}}
+%les rangs
+\newcommand{\RangQuad}{R_{\MatQuad}}
+\newcommand{\rangQuad}{R_{\matQuad}}
+
+% parametre de la quadrique
+\newcommand{\qParam}{q}
+\newcommand{\txtqParam}{$\qParam${}}
+
+% parametre de la quadrique dans un repere specifie
+\newcommand{\qParamRef}[1]{{^{#1}}\qParam}
+\newcommand{\qParamRefInd}[2]{{^{#1}}\qParam_{#2}}
+\newcommand{\qParamInd}[1]{\qParam_{#1}}
+\newcommand{\qParamEstInd}[1]{\widehat{\qParam}_{#1}}
+
+
+%---------------------------------------------
+\newcommand{\normK}{\sqrt{\sum_i {\cParamInd{ij}}^2 }}
+\newcommand{\normKprime}{\sqrt{
+({{\qParamInd{7}}^2\!-\!\qParamInd{1}\qParamInd{10}})^2\!+\!
+({\qParamInd{8}}^2\!-\!\qParamInd{2}\qParamInd{10})^2\!+\!
+(\qParamInd{7}\qParamInd{8}\!-\!\qParamInd{4}\qParamInd{10})^2\!+\!
+(\qParamInd{7}\qParamInd{9}\!-\!\qParamInd{5}\qParamInd{10})^2\!+\!
+(\qParamInd{7}\qParamInd{7}\!-\!\qParamInd{6}\qParamInd{10})^2\!+\!
+({\qParamInd{9}}^2\!-\! \qParamInd{3}\qParamInd{10})^2}}
+%---------------------------------------------
+\newcommand{\Jconic}{\mathbf J_\conic}
+%---------------------------------------------
+\newcommand{\fcout}{\chi^2}
+
+%--------------------------------------------
+\newcommand{\entropy}{I}
+\newcommand{\critere}{\tau}
+

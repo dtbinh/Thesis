@@ -1,0 +1,286 @@
+
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+\subsection{Application au mouvement d'attente}
+\label{chap:activeWait}
+%-------------------------------------------------------------------%
+%-------------------------------------------------------------------%
+Lorsqu'un humain attend, l'intégralité de son corps est en mouvement.
+Cependant, il n'est pas possible d'exprimer facilement une t\^ache d'attente
+(au sens fonction de t\^ache).
+C'est pour cette raison que pour reproduire ce mouvement, nous séléctionnons
+un ensemble de t\^aches qui vont, par combinaison, reproduire
+les caractéristiques du mouvement.
+\subsubsection{Réplication du mouvement}
+Les t\^aches de suivi de trajectoire des mains
+et de l'orientation de la tête, présentées dans le paragraphe précédent,
+sont choisies comme étant les t\^aches caractérisant un mouvement 
+d'attente. Les trajectoires correspondantes sont donc mesurées sur un humain
+à l'aide du système de capture de mouvement, et serviront de trajectoires
+de références.
+Pour garantir la stabilité du robot, deux t\^aches
+sont ajoutées en haute priorité (\emph{double support} et \emph{centre de masse}): 
+les deux pieds sont contraints à rester au sol, et le centre de masse
+est fixe en $x$ et en $y$ (la hauteur n'est pas contrainte).
+Pour éviter les postures trop proches des singularités,
+une t\^ache de posture est utilisée en faible priorité: lors du mouvement, le robot
+gardera une posture proche de la configuration de repos (configuration \emph{half-sitting}).
+La figure~\ref{fig:sotActiveWait} illustre la pile de t\^aches utilisée pour réaliser
+un mouvement d'attente.
+\begin{figure}[t]
+  \begin{center}
+    \begin{tabular}{|c|}
+      \hline
+      Posture \emph{Half-sitting} (30D)\\
+      \hline
+      Main droite (3D)\\
+      \hline
+      Main gauche (3D)\\
+      \hline
+      Tête (6D)\\
+      \hline
+      Centre de masse (2D)\\
+      \hline
+      Double support (6D)\\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{La pile de t\^aches qui va permettre de reproduire le mouvement d'attente.}
+  \label{fig:sotActiveWait}
+\end{figure}
+Cette pile de t\^aches sera exécutée par un robot HRP-2.
+
+%L'outil de capture de mouvement est donc utilisé pour obtenir
+%des trajectoires de références correspondant
+%aux trajectoires 3D des mains, et de la trajectoire 6D (position
+%et orientation) de la tête d'un humain.
+
+\subsubsection{Edition du mouvement}
+Pour donner un aspect aléatoire au mouvement exécuté par le robot,
+plusieurs démonstrations de mouvements d'attente sont enregistrées.
+En ce qui concerne le mouvement d'attente, les positions atteintes
+par les différents membres ne sont pas importantes. Ce sont les
+déplacements de ces membres qui caractérisent ce mouvement.
+Il n'est donc pas capital que le suivi de trajectoire soit parfaitement accompli.
+Toutes les trajectoires sont éditées afin que les positions de début et de
+fin soient identiques pour chaque ensemble de trajectoires. Ainsi n'importe quel séquencement
+des trajectoires reste continu.
+Pour chaque t\^ache, une des trajectoires enregistrées 
+correspondant à cette t\^ache est choisie aléatoirement
+puis est définie comme trajectoire de référence. Lorsque la trajectoire 
+a été exécutée en totalité, une nouvelle trajectoire est choisie comme référence et ainsi de suite (voir
+figure~\ref{fig:activeLoop}).
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{0.6\textwidth}{!}{
+    \input{figures/chapitre4/activeWaitOpPoint.tex}
+    }
+  \end{center}
+  \caption[Reproduction du mouvement d'attente.]{Pour chaque t\^ache de suivi, des trajectoires sont choisies comme
+  référence parmi un ensemble de trajectoires enregistrées.}
+  \label{fig:activeLoop}
+\end{figure}
+La figure~\ref{fig:activeWaitStrips} illustre le mouvement d'attente réalisé par le robot
+HRP-2 en utilisant la pile de t\^aches, et les vidéos associées sont 
+disponibles\footnote{\url{http://homepages.laas.fr/shak/videos/}}.
+\begin{figure}[p]
+  \begin{center}
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/aw1.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/aw2.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/aw3.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/aw4.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/aw5.ps}
+    }\\
+
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/awz2.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/awz3.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/ActiveWait/awz4.ps}
+    }
+  \end{center}
+  \caption{Le mouvement d'attente réalisé par le robot HRP-2.}
+  \label{fig:activeWaitStrips}
+\end{figure}
+
+\subsection{Adaptation du mouvement au modèle}
+Les travaux présentés dans~\cite{shin01} introduisent la notion
+d'\emph{importance} d'un effecteur. Il s'agit d'un critère qui permet de
+déterminer si la position d'un effecteur est plus importante que la configuration articulaire associée
+à sa chaîne cinématique.
+L'importance des effecteurs est déterminée en analysant la posture d'un personnage
+en relation avec son environnement: lorsqu'un effecteur touche
+un objet (distance nulle), la position de l'effecteur est considérée comme étant plus importante
+que la configuration articulaire. Par exemple, lorsqu'une main touche un objet,
+il est important de conserver ce contact et donc la position de la main doit
+être recopiée en priorité. Par contre si la main est en l'air alors,
+la configuration articulaire est plus importante car il est possible que la position
+de la main ne soit pas à portée du personnage, à cause de la structure différente,
+qui reproduit le mouvement. La figure~\ref{fig:ballet} illustre un exemple
+de mouvement où en fonction de l'effecteur, la configuration articulaire
+ou la position doit être respectée.
+\begin{figure}[p]
+  \begin{center}
+    \resizebox{0.4\textwidth}{!}{
+    \input{figures/chapitre4/ballet.tex}
+    }
+  \end{center}
+  \caption[Que faut-il reproduire?]{Pour reproduire le mouvement de la danseuse, il est plus important
+  de respecter la position de la main droite touchant la barre que la configuration articulaire associée.
+  En ce qui concerne le pied gauche, il est plus important de respecter la configuration articulaire pour
+  conserver l'allure du mouvement.}
+  \label{fig:ballet}
+\end{figure}
+
+Ce paragraphe s'appuie sur le travail réalisé par~\cite{ramos11} dans le 
+cadre de l'édition de mouvement dynamique issu d'un mouvement humain pour l'adapter
+à la dynamique d'un robot. L'exemple présenté illustre également l'importance
+du choix des t\^aches à reproduire. L'utilisation de la dynamique dans la génération de 
+mouvements a pour but de rendre le mouvement exécuté le plus réaliste possible. 
+
+Considérons un mouvement de yoga réalisé par
+un humain est enregistré par capture de mouvements (voir figure~\ref{fig:yogaL}).
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \includegraphics[width=0.25\linewidth]{figures/chapitre4/yogaL1.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.25\linewidth]{figures/chapitre4/yogaL2.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.25\linewidth]{figures/chapitre4/yogaL3.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.25\linewidth]{figures/chapitre4/yogaL4.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.25\linewidth]{figures/chapitre4/yogaL.ps}
+    }
+  \end{center}
+  \caption{Un mouvement de yoga enregistré gr\^ace au système de capture de mouvements.}
+  \label{fig:yogaL}
+\end{figure}
+Si le mouvement
+est converti en trajectoire articulaire et est appliqué directement 
+sur le robot en cinématique, alors plusieurs problème liés 
+à la différence de structures apparaissent. Le pied d'appui décolle du sol
+(problème connu en animation sous le nom de \emph{foot skating} ou \emph{foot sliding}), 
+les mains rentrent en collision puis transpercent le torse (voir figure~\ref{fig:yogaKine}). 
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaHRP2Kine1.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaHRP2Kine2.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaHRP2Kine3.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaHRP2Kine4.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaHRP2Kine5.ps}
+    }
+  \end{center}
+  \caption[Mouvement de yoga en cinématique.]{Le mouvement de yoga reproduit en cinématique en suivant les trajectoires articulaires
+  calculées à partir des données issues de la capture de mouvements. Plusieurs problèmes apparaissent:
+  le pied d'appui perd son contact avec le sol, les mains rentrent en collision et transpercent le torse.}
+  \label{fig:yogaKine}
+\end{figure}
+
+En rejouant la trajectoire mais cette fois ci en respectant la dynamique du robot 
+(en utilisant une extension de la pile de t\^aches en dynamique~\cite{saab11}), le 
+pied d'appui est respecté mais le résultat n'est plus le mouvement de yoga puisque le robot perd
+l'équilibre à cause de ses propres contraintes dynamiques différente de l'humain (voir figure~\ref{fig:yogaDynFall}).
+
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDynFall1.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDynFall2.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDynFall3.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDynFall4.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDynFall5.ps}
+    }
+  \end{center}
+  \caption[Mouvement de yoga en dynamique.]{Le mouvement de yoga reproduit en dynamique. Le robot perd l'équilibre à cause de ses contraintes
+  dynamiques.}
+  \label{fig:yogaDynFall}
+\end{figure}
+
+En analysant le mouvement initial, on peut déterminer les caractéristiques importantes 
+du mouvement. Dans l'exemple du mouvement de yoga, la position relative d'une main par rapport à l'autre
+est importante, de même la position du centre de masse (et donc l'équilibre) doivent être contrôlées correctement.
+En choisissant ces caractéristiques comme étant les t\^aches à exécuter pour reproduire le mouvement,
+le mouvement généré devient correct (voir figure~\ref{fig:yogaDyn}).
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDyn1.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDyn2.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDyn3.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDyn4.ps}
+    }
+    \subfigure{
+    \includegraphics[width=0.3\linewidth]{figures/chapitre4/yogaDyn5.ps}
+    }
+  \end{center}
+  \caption[Mouvement de yoga valide en dynamique.]{Le mouvement de yoga reproduit en dynamique après édition du mouvement
+  original pour définir correctement les t\^aches caractéristiques: la posture, la distance relative entre les
+  deux mains, et le contrôle du centre de masse. Le mouvement généré est fidèle à la démonstration (sans collision ni
+  perte d'équilibre).}
+  \label{fig:yogaDyn}
+\end{figure}
+Enfin la figure~\ref{fig:yogaR} illustre le mouvement appliqué sur le vrai robot.
+\begin{figure}[t]
+  \begin{center}
+    \subfigure{
+    \includegraphics[trim=0px 300px 0px 300px, clip=true, width=0.3\linewidth]{figures/chapitre4/treepose1.ps}
+    }
+    \subfigure{
+    \includegraphics[trim=0px 300px 0px 300px, clip=true, width=0.3\linewidth]{figures/chapitre4/treepose2.ps}
+    }
+    \subfigure{
+    \includegraphics[trim=0px 300px 0px 300px, clip=true, width=0.3\linewidth]{figures/chapitre4/treepose3.ps}
+    }
+    \subfigure{
+    \includegraphics[trim=0px 300px 0px 300px, clip=true, width=0.3\linewidth]{figures/chapitre4/treepose4.ps}
+    }                                                     
+    \subfigure{
+    \includegraphics[trim=0px 300px 0px 300px, clip=true, width=0.3\linewidth]{figures/chapitre4/treepose5.ps}
+    }
+  \end{center}
+  \caption[Mouvement de yoga sur le robot.]{Le mouvement de yoga reproduit sur le robot HRP-2.}
+  \label{fig:yogaR}
+\end{figure}
+
+\FloatBarrier

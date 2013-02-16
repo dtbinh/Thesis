@@ -1,0 +1,71 @@
+
+
+L'adjectif \textit{quadratique} vient du mot latin  \textit{quadratum} qui signifie \textit{carré}. Comme l'aire d'une surface carrée de côté $a$ est $a^2$, une équation polynomiale de degrès deux est qualifiée d'équation \textit{quadratique}. Par extention, une quadrique est une surface algébrique d'ordre deux. Par analogie, comme le volume d'un cube de côté $a$ est $a^3$, une équation polynomiale de degrès $3$ est dite \textit{cubique} et une équation polynomiale de degrès $4$ est dite \textit{quartique} ou \textit{biquadratique}.
+%The adjective quadratic comes from the Latin word quadratum for square. A term like x2 is called a square in algebra because it is the area of a square with side x.
+
+\footnote{Les définition présentées dans cett annexe sont tirées du livre \textit{Géometrie affine et euclidienne Quadriques} \cite{Vienne05}.}
+
+\section{Définition mathématique des quadriques}
+
+Une \textit{quadrique} de $\mathbb{R}^n$ est une classe d'équivalence de fonctions polynomiales de degrès deux pour la relation \[f \simeq g \Longleftrightarrow \exists \lambda \in \mathbb{R}, \lambda \neq 0, f = \lambda g\]
+
+L'ensemble des point $M$ solutions d'une équation polynomiale du deuxième degrè $f(M)=0$ est dit \textbf{quadrique ponctuelle} associée à $f$
+
+
+\section{Les quadriques de dimension 2 (coniques)}
+
+Toute quadrique régulière (conique) de l'espace euclidien $\mathbb{R}^2$ admet dans un repère orthonormé convenablement choisi, une équation de l'une des formes:\\%\footnote{Un applet java permettant de visualiser les quadriques de ces différents types est disponible sur le site \texttt{http:\/\/www.javaview.de\/demo\/surface\/common\/PaSurface_Ellipsoid.html}} : 
+
+\begin{tabular}{l l}
+ $\frac{x²}{a²}+\frac{y²}{b²}-1=0$ & Ellipse \\
+ $\frac{x²}{a²}-\frac{y²}{b²}-1=0$ & Hyperbole \\
+ $\frac{x²}{a²}-\frac{y²}{b²}=0$ & Deux droites séquantes \\
+ $x²-\lambda y =0$ & Parabole \\
+ $x² - a²=0$ (avec $a \neq 0$) & Deux droites parallèles 
+\end{tabular}
+
+\TODO{AJOUTER UNE FIGURE}
+
+
+\section{Les quadriques de dimension 3}
+
+Toute quadrique régulière de l'espace euclidien $\mathbb{R}^3$ admet, dans une repère orthonormé et convenablement choisi, une équation de l'une des formes :\\ 
+
+\begin{tabular}{l l}
+ $\frac{x²}{a²}+\frac{y²}{b²}+\frac{z²}{c²}-1=0$ & Ellipsoïde \\
+ $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}{c²}-1=0$ & Hypoerboloïde à une nappe \\
+ $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}{c²}+1=0$ & Hyperboloïde à deux nappes\\
+ $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}{c²}=0$   & Cône \\
+ $\frac{x²}{a²}+\frac{y²}{b²}-1=0$ & Cylindre elliptique \\
+ $\frac{x²}{a²}-\frac{y²}{b²}-1=0$ & Cylindre hyperbolique \\
+ $\frac{x²}{a²}-\frac{y²}{b²}=0$ & Deux plans séquents \\
+ $\frac{x²}{a²}+\frac{y²}{b²}+\lambda z = 0$ & Paraboloïde elliptique \\
+ $\frac{x²}{a²}-\frac{y²}{b²}+\lambda z = 0$ & Paraboloïde hyperbolique  \\
+ $\frac{x²}{a²}+z = 0$ & Cylindre parabolique \\
+ $\frac{x²}{a²}-1 =0$ & Deux plans parallèles \\ 
+\end{tabular}
+
+
+
+
+%\begin{tabular}{l c c c l}
+% équation & $\RangQuad$ & $\rangQuad$ & $signe( \DetQuad)$ & Surface \\
+% $x^2=0$ & 1 & 1  & & plan coincidents \\
+% $\frac{x²}{a²}+\frac{y²}{b²}+\frac{z²}{c²}+1=0$ & 3&  4 &+ &  Ellipsoïde imaginaire \\
+% $\frac{x²}{a²}+\frac{y²}{b²}+\frac{z²}{c²}-1=0$ & 3&  4 &- &  Ellipsoïde réelle \\
+% $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}{c²}=0$ & 3&  3 & &  Cône elliptique imaginaire \\
+% $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}=0$ & 3&  3 & &  Cône elliptique réel \\
+% $\frac{x²}{a²}+\frac{y²}{b²}-1=0$ & 2&  3 & & Cylindre elliptique imaginaire \\
+% $\frac{x²}{a²}+\frac{y²}{b²}-1=0$ & 2&  3 & & Cylindre elliptique réel\\
+%  $\frac{x²}{a²}+\frac{y²}{b²}+\lambda z = 0$ & 2&  4 & - & Paraboloïde elliptique \\
+% $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}{c²}-1=0$ & 3& 4 & +& Hypoerboloïde à une nappe \\
+% $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}{c²}+1=0$ & 3& 4 & -& Hyperboloïde à deux nappes\\
+% $\frac{x²}{a²}+\frac{y²}{b²}-\frac{z²}{c²}=0$   & Cône \\
+
+% $\frac{x²}{a²}-\frac{y²}{b²}-1=0$ & Cylindre hyperbolique \\
+% $\frac{x²}{a²}-\frac{y²}{b²}=0$ & Deux plans séquents \\
+
+% $\frac{x²}{a²}-\frac{y²}{b²}+\lambda z = 0$ & Paraboloïde hyperbolique  \\
+% $\frac{x²}{a²}+z = 0$ & Cylindre parabolique \\
+% $\frac{x²}{a²}-1 =0$ & Deux plans parallèles \\ 
+%\end{tabular}
